@@ -1,0 +1,57 @@
+---
+interface Props {
+  title: string
+  description?: string
+}
+
+const { title, description = "DX Lab - DX推進・AI活用のポートフォリオ" } = Astro.props
+const base = import.meta.env.BASE_URL
+---
+
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <main>
+      <slot />
+      <footer>
+        <p>&copy; 2025 DX Lab</p>
+      </footer>
+    </main>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        font-family: system-ui, -apple-system, sans-serif;
+        line-height: 1.7;
+        color: #333;
+        background: #fff;
+      }
+
+      main {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem;
+      }
+
+      footer {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+        text-align: center;
+        color: #999;
+        font-size: 0.85rem;
+      }
+    </style>
+  </body>
+</html>

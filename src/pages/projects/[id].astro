@@ -1,0 +1,114 @@
+---
+import { getCollection, render } from "astro:content"
+import Base from "../../layouts/Base.astro"
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects")
+  return projects.map((project) => ({
+    params: { id: project.id },
+    props: { project },
+  }))
+}
+
+const { project } = Astro.props
+const { Content } = await render(project)
+const base = import.meta.env.BASE_URL
+---
+
+<Base title={`${project.data.title} | DX Lab`} description={project.data.description}>
+  <nav class="back">
+    <a href={base}>&larr; トップに戻る</a>
+  </nav>
+
+  <article>
+    <h1>{project.data.title}</h1>
+    <div class="tags">
+      {project.data.tags.map((tag) => (
+        <span class="tag">{tag}</span>
+      ))}
+    </div>
+    <div class="content">
+      <Content />
+    </div>
+  </article>
+
+  <style>
+    .back {
+      margin-bottom: 2rem;
+    }
+
+    .back a {
+      color: #666;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .back a:hover {
+      color: #333;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 2rem;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      padding: 0.15rem 0.6rem;
+      background: #f5f5f5;
+      border-radius: 4px;
+      color: #666;
+    }
+
+    .content :global(h2) {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.8rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    .content :global(h3) {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .content :global(p) {
+      margin-bottom: 1rem;
+      color: #555;
+    }
+
+    .content :global(ol),
+    .content :global(ul) {
+      margin-bottom: 1rem;
+      padding-left: 1.5rem;
+      color: #555;
+    }
+
+    .content :global(li) {
+      margin-bottom: 0.3rem;
+    }
+
+    .content :global(strong) {
+      color: #333;
+    }
+
+    .content :global(code) {
+      font-size: 0.85rem;
+      background: #f5f5f5;
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+    }
+  </style>
+</Base>

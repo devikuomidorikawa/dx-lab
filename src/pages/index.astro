@@ -1,166 +1,125 @@
 ---
-const projects = [
-  {
-    title: "Google Workspace 自動化ツール",
-    description: "GAS（Google Apps Script）を活用し、スプレッドシート・フォーム・メールの業務フローを自動化。手作業を大幅に削減。",
-    tags: ["Google Apps Script", "自動化", "業務改善"],
-  },
-  {
-    title: "AI活用 業務効率化",
-    description: "Claude / ChatGPT を業務に導入し、文書作成・データ分析・コードレビューを効率化。プロンプト設計から運用定着まで推進。",
-    tags: ["AI", "Claude", "ChatGPT", "プロンプトエンジニアリング"],
-  },
-  {
-    title: "社内DX推進プロジェクト",
-    description: "紙・Excel中心の業務プロセスをデジタル化。ツール選定から導入・定着支援まで一貫して担当。",
-    tags: ["DX推進", "業務改善", "プロジェクト管理"],
-  },
-]
+import { getCollection } from "astro:content"
+import Base from "../layouts/Base.astro"
+
+const projects = await getCollection("projects")
+const sorted = [...projects].sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99))
+const base = import.meta.env.BASE_URL
 ---
 
-<html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="DX Lab - DX推進・AI活用のポートフォリオ" />
-    <title>DX Lab</title>
-  </head>
-  <body>
-    <main>
-      <header>
-        <h1>DX Lab</h1>
-        <p class="tagline">DX推進 &times; AI活用で、業務をもっとシンプルに</p>
-      </header>
+<Base title="DX Lab">
+  <header>
+    <h1>DX Lab</h1>
+    <p class="tagline">DX推進 &times; AI活用で、業務をもっとシンプルに</p>
+  </header>
 
-      <section class="about">
-        <h2>About</h2>
-        <p>
-          AIやGoogle関連サービスを利用して業務改善を行った事例を紹介しています。
-        </p>
-      </section>
+  <section class="about">
+    <h2>About</h2>
+    <p>
+      AIやGoogle関連サービスを利用して業務改善を行った事例を紹介しています。
+    </p>
+  </section>
 
-      <section class="projects">
-        <h2>Projects</h2>
-        <ul>
-          {projects.map((project) => (
-            <li>
-              <h3>{project.title}</h3>
-              <p>{project.description}</p>
-              <div class="tags">
-                {project.tags.map((tag) => (
-                  <span class="tag">{tag}</span>
-                ))}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
+  <section class="projects">
+    <h2>Projects</h2>
+    <ul>
+      {sorted.map((project) => (
+        <li>
+          <a href={`${base}projects/${project.id}/`}>
+            <h3>{project.data.title}</h3>
+            <p>{project.data.description}</p>
+            <div class="tags">
+              {project.data.tags.map((tag) => (
+                <span class="tag">{tag}</span>
+              ))}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
 
-      <footer>
-        <p>&copy; 2025 DX Lab</p>
-      </footer>
-    </main>
+  <style>
+    header {
+      margin-bottom: 3rem;
+    }
 
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
 
-      html {
-        font-family: system-ui, -apple-system, sans-serif;
-        line-height: 1.7;
-        color: #333;
-        background: #fff;
-      }
+    .tagline {
+      margin-top: 0.5rem;
+      color: #666;
+      font-size: 1rem;
+    }
 
-      main {
-        max-width: 680px;
-        margin: 0 auto;
-        padding: 3rem 1.5rem;
-      }
+    h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px solid #eee;
+    }
 
-      header {
-        margin-bottom: 3rem;
-      }
+    section {
+      margin-bottom: 2.5rem;
+    }
 
-      h1 {
-        font-size: 2rem;
-        font-weight: 700;
-        letter-spacing: 0.02em;
-      }
+    .about p {
+      color: #555;
+    }
 
-      .tagline {
-        margin-top: 0.5rem;
-        color: #666;
-        font-size: 1rem;
-      }
+    .projects ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
 
-      h2 {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        padding-bottom: 0.3rem;
-        border-bottom: 1px solid #eee;
-      }
+    .projects li {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      transition: border-color 0.2s;
+    }
 
-      section {
-        margin-bottom: 2.5rem;
-      }
+    .projects li:hover {
+      border-color: #ccc;
+    }
 
-      .about p {
-        color: #555;
-      }
+    .projects a {
+      display: block;
+      padding: 1.2rem;
+      text-decoration: none;
+      color: inherit;
+    }
 
-      .projects ul {
-        list-style: none;
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-      }
+    .projects h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
 
-      .projects li {
-        padding: 1.2rem;
-        border: 1px solid #eee;
-        border-radius: 8px;
-      }
+    .projects p {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 0.8rem;
+    }
 
-      .projects h3 {
-        font-size: 1.05rem;
-        font-weight: 600;
-        margin-bottom: 0.4rem;
-      }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
 
-      .projects p {
-        font-size: 0.9rem;
-        color: #555;
-        margin-bottom: 0.8rem;
-      }
-
-      .tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.4rem;
-      }
-
-      .tag {
-        font-size: 0.75rem;
-        padding: 0.15rem 0.6rem;
-        background: #f5f5f5;
-        border-radius: 4px;
-        color: #666;
-      }
-
-      footer {
-        margin-top: 3rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid #eee;
-        text-align: center;
-        color: #999;
-        font-size: 0.85rem;
-      }
-    </style>
-  </body>
-</html>
+    .tag {
+      font-size: 0.75rem;
+      padding: 0.15rem 0.6rem;
+      background: #f5f5f5;
+      border-radius: 4px;
+      color: #666;
+    }
+  </style>
+</Base>
