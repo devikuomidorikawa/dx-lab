@@ -175,6 +175,47 @@ const base = import.meta.env.BASE_URL
       background: #f5f3f0;
       font-weight: 600;
     }
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.3rem;
+      }
+
+      .meta {
+        flex-direction: column;
+        gap: 0.2rem;
+      }
+
+      .content :global(h2) {
+        font-size: 1.1rem;
+        margin-top: 1.5rem;
+      }
+
+      .content :global(h3) {
+        font-size: 1rem;
+      }
+
+      .content :global(pre) {
+        padding: 0.8rem;
+        font-size: 0.8rem;
+        border-radius: 4px;
+      }
+
+      .content :global(pre code) {
+        font-size: 0.8rem;
+      }
+
+      .content :global(table) {
+        font-size: 0.8rem;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      .content :global(th),
+      .content :global(td) {
+        padding: 0.4rem 0.6rem;
+      }
+    }
   </style>
 
   <script>
