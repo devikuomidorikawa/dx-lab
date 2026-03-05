@@ -22,6 +22,12 @@ const base = import.meta.env.BASE_URL
 
   <article>
     <h1>{project.data.title}</h1>
+    <div class="meta">
+      <span>作成日: {project.data.createdAt}</span>
+      {project.data.createdAt !== project.data.updatedAt && (
+        <span>更新日: {project.data.updatedAt}</span>
+      )}
+    </div>
     <div class="tags">
       {project.data.tags.map((tag) => (
         <span class="tag">{tag}</span>
@@ -50,6 +56,14 @@ const base = import.meta.env.BASE_URL
     h1 {
       font-size: 1.6rem;
       font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+
+    .meta {
+      display: flex;
+      gap: 1.2rem;
+      font-size: 0.8rem;
+      color: #999;
       margin-bottom: 0.8rem;
     }
 

@@ -2,6 +2,8 @@
 title: "Google Meet 議事要旨の自動生成"
 description: "Google Workspace Studio の Flows を使い、Google Meet の打ち合わせ内容を議事要旨に自動でまとめる仕組みを構築。"
 tags: ["Google Workspace Studio", "Google Meet", "Gemini", "自動化", "議事録"]
+createdAt: "2025-03-05"
+updatedAt: "2025-03-05"
 order: 1
 ---
 
