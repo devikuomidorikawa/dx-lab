@@ -25,7 +25,7 @@ const base = import.meta.env.BASE_URL
     <ul>
       {sorted.map((project) => (
         <li>
-          <a href={`${base}projects/${project.id}/`}>
+          <a href={`${base}/projects/${project.id}/`}>
             <h3>{project.data.title}</h3>
             <p>{project.data.description}</p>
             <div class="tags">
