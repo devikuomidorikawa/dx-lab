@@ -1,0 +1,42 @@
+---
+interface Props {
+  tags: string[]
+  linked?: boolean
+}
+
+const { tags, linked = false } = Astro.props
+const base = import.meta.env.BASE_URL
+---
+
+<div class="tags">
+  {tags.map((tag) =>
+    linked ? (
+      <a class="tag" href={`${base}/tags/${encodeURIComponent(tag)}/`}>{tag}</a>
+    ) : (
+      <span class="tag">{tag}</span>
+    )
+  )}
+</div>
+
+<style>
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tag {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.6rem;
+    background: #f5f5f5;
+    border-radius: 4px;
+    color: #666;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+
+  a.tag:hover {
+    background: #e8e8e8;
+    color: #333;
+  }
+</style>

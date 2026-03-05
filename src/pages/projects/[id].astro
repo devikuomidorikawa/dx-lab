@@ -1,13 +1,16 @@
 ---
 import { getCollection, render } from "astro:content"
 import Base from "../../layouts/Base.astro"
+import TagList from "../../components/TagList.astro"
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects")
-  return projects.map((project) => ({
-    params: { id: project.id },
-    props: { project },
-  }))
+  return projects
+    .filter((p) => p.data.status !== "draft")
+    .map((project) => ({
+      params: { id: project.id },
+      props: { project },
+    }))
 }
 
 const { project } = Astro.props
@@ -15,7 +18,7 @@ const { Content } = await render(project)
 const base = import.meta.env.BASE_URL
 ---
 
-<Base title={`${project.data.title} | DX Lab`} description={project.data.description}>
+<Base title={`${project.data.title} | DX Lab`} description={project.data.description} ogType="article">
   <nav class="back">
     <a href={`${base}/`}>&larr; トップに戻る</a>
   </nav>
@@ -28,11 +31,7 @@ const base = import.meta.env.BASE_URL
         <span>更新日: {project.data.updatedAt}</span>
       )}
     </div>
-    <div class="tags">
-      {project.data.tags.map((tag) => (
-        <span class="tag">{tag}</span>
-      ))}
-    </div>
+    <TagList tags={project.data.tags} linked />
     <div class="content">
       <Content />
     </div>
@@ -63,23 +62,12 @@ const base = import.meta.env.BASE_URL
       display: flex;
       gap: 1.2rem;
       font-size: 0.8rem;
-      color: #999;
+      color: #888;
       margin-bottom: 0.8rem;
     }
 
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
+    article > :global(.tags) {
       margin-bottom: 2rem;
-    }
-
-    .tag {
-      font-size: 0.75rem;
-      padding: 0.15rem 0.6rem;
-      background: #f5f5f5;
-      border-radius: 4px;
-      color: #666;
     }
 
     .content :global(h2) {
@@ -167,6 +155,25 @@ const base = import.meta.env.BASE_URL
       padding: 0;
       color: inherit;
       font-size: 0.85rem;
+    }
+
+    .content :global(table) {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .content :global(th),
+    .content :global(td) {
+      border: 1px solid #eee;
+      padding: 0.5rem 0.8rem;
+      text-align: left;
+    }
+
+    .content :global(th) {
+      background: #f9f9f9;
+      font-weight: 600;
     }
   </style>
 
