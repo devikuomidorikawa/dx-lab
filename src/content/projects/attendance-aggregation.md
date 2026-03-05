@@ -1,0 +1,109 @@
+---
+title: "勤怠データの集計・異常検知の自動化"
+description: "Google スプレッドシートで管理する勤怠データを GAS で自動集計し、Gemini で異常パターンを検知する仕組みを構築。"
+tags: ["Google Apps Script", "Google Sheets", "Gemini", "自動化"]
+createdAt: "2025-03-05"
+updatedAt: "2025-03-05"
+status: "published"
+order: 17
+---
+
+## 課題
+
+職員の勤怠データ（出退勤時刻、休暇取得、時間外勤務）をスプレッドシートで管理しているが、月末の集計作業に時間がかかっていた。また、36協定の時間外上限に近づいている職員や、有給休暇の取得が低調な職員を見落とすリスクがあった。
+
+## 解決策
+
+**Google Apps Script（GAS）** で勤怠データの集計を自動化し、**Gemini** で異常パターン（時間外超過傾向、連続勤務、有休未取得など）を検知する仕組みを構築した。
+
+## 構築手順
+
+### 1. 勤怠管理スプレッドシートの構成
+
+**日次データシート:**
+
+| 職員名 | 日付 | 出勤時刻 | 退勤時刻 | 休暇種別 | 時間外 |
+|--------|------|----------|----------|----------|--------|
+| 田中 | 3/1 | 8:30 | 17:15 | - | 0:00 |
+| 田中 | 3/2 | 8:30 | 20:00 | - | 2:45 |
+
+### 2. GAS による自動集計
+
+月末にタイマートリガーで集計スクリプトを実行し、職員ごとの月次サマリーを生成する。
+
+**集計項目:**
+- 出勤日数・欠勤日数
+- 時間外勤務の合計時間
+- 有給休暇の取得日数と残日数
+- 連続勤務日数
+
+**GAS コード例:**
+
+```javascript
+function aggregateMonthly() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet()
+  const dataSheet = ss.getSheetByName('日次データ')
+  const summarySheet = ss.getSheetByName('月次サマリー')
+  const data = dataSheet.getDataRange().getValues()
+
+  const summary = {}
+  data.slice(1).forEach(row => {
+    const name = row[0]
+    if (!summary[name]) {
+      summary[name] = { days: 0, overtime: 0, paidLeave: 0 }
+    }
+    if (row[2]) summary[name].days++
+    summary[name].overtime += timeToHours(row[5])
+    if (row[4] === '有給') summary[name].paidLeave++
+  })
+
+  // サマリーシートに出力
+  const output = Object.entries(summary).map(
+    ([name, s]) => [name, s.days, s.overtime, s.paidLeave]
+  )
+  summarySheet.getRange(2, 1, output.length, 4).setValues(output)
+}
+```
+
+### 3. Gemini による異常検知
+
+月次サマリーを Gemini に渡し、注意が必要な職員を検出する。
+
+**プロンプト例:**
+
+```
+以下の勤怠月次サマリーを分析し、
+注意が必要な職員をリストアップしてください。
+
+【判定基準】
+- 時間外勤務が月45時間を超えている → 警告
+- 時間外勤務が月36時間を超えている → 注意
+- 有給休暇取得が年度累計5日未満（年度残り3ヶ月以内）→ 注意
+- 連続勤務が7日以上 → 警告
+
+【データ】
+{{月次サマリーのデータ}}
+
+【出力フォーマット】
+■ 警告
+  - 職員名: 該当項目と数値
+
+■ 注意
+  - 職員名: 該当項目と数値
+
+■ 該当なしの場合は「異常なし」と記載
+```
+
+## 導入効果
+
+| 項目 | 導入前 | 導入後 |
+|------|--------|--------|
+| 月次集計時間 | 半日〜1 日 | 自動（数分） |
+| 異常の検出 | 手動で確認（見落としあり） | 自動で検知・通知 |
+| 法令違反リスク | 気づくのが遅れることも | 早期に警告 |
+
+## 注意点
+
+- 勤怠データの正確性は入力の質に依存するため、日次の入力ルールを徹底する
+- 異常検知の結果は人事担当者が確認し、個別の事情を考慮して対応する
+- 個人の勤怠情報は機密性が高いため、スプレッドシートのアクセス権限を適切に設定する
