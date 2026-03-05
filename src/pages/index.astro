@@ -6,6 +6,11 @@ import TagList from "../components/TagList.astro"
 const allProjects = await getCollection("projects")
 const projects = allProjects.filter((p) => p.data.status !== "draft")
 const sorted = [...projects].sort((a, b) => b.data.createdAt.localeCompare(a.data.createdAt))
+
+const tagCounts = new Map<string, number>()
+projects.forEach((p) => p.data.tags.forEach((t) => tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1)))
+const tagsSorted = [...tagCounts.entries()].sort((a, b) => b[1] - a[1])
+
 const base = import.meta.env.BASE_URL
 ---
 
@@ -24,9 +29,17 @@ const base = import.meta.env.BASE_URL
 
   <section class="projects">
     <h2>Projects</h2>
+
+    <div class="tag-filter">
+      <button class="filter-btn active" data-tag="all">すべて</button>
+      {tagsSorted.map(([tag, count]) => (
+        <button class="filter-btn" data-tag={tag}>{tag} ({count})</button>
+      ))}
+    </div>
+
     <ul>
       {sorted.map((project) => (
-        <li>
+        <li data-tags={JSON.stringify(project.data.tags)}>
           <a href={`${base}/projects/${project.id}/`}>
             <h3>{project.data.title}</h3>
             <time>{project.data.createdAt}</time>
@@ -37,7 +50,6 @@ const base = import.meta.env.BASE_URL
       ))}
     </ul>
   </section>
-
 
   <style>
     header {
@@ -72,6 +84,35 @@ const base = import.meta.env.BASE_URL
       color: #555;
     }
 
+    .tag-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-btn {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.7rem;
+      background: #f5f5f5;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      color: #666;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    .filter-btn:hover {
+      background: #e8e8e8;
+      color: #333;
+    }
+
+    .filter-btn.active {
+      background: #333;
+      color: #fff;
+      border-color: #333;
+    }
+
     .projects ul {
       list-style: none;
       display: flex;
@@ -82,7 +123,11 @@ const base = import.meta.env.BASE_URL
     .projects li {
       border: 1px solid #eee;
       border-radius: 8px;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, opacity 0.2s;
+    }
+
+    .projects li.hidden {
+      display: none;
     }
 
     .projects li:hover {
@@ -114,6 +159,27 @@ const base = import.meta.env.BASE_URL
       color: #555;
       margin-bottom: 0.8rem;
     }
-
   </style>
+
+  <script>
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-btn')
+    const items = document.querySelectorAll<HTMLLIElement>('.projects li')
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tag = btn.dataset.tag
+        buttons.forEach((b) => b.classList.remove('active'))
+        btn.classList.add('active')
+
+        items.forEach((item) => {
+          if (tag === 'all') {
+            item.classList.remove('hidden')
+            return
+          }
+          const tags: string[] = JSON.parse(item.dataset.tags ?? '[]')
+          item.classList.toggle('hidden', !tags.includes(tag!))
+        })
+      })
+    })
+  </script>
 </Base>
