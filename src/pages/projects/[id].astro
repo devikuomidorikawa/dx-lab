@@ -2,6 +2,7 @@
 import { getCollection, render } from "astro:content"
 import Base from "../../layouts/Base.astro"
 import TagList from "../../components/TagList.astro"
+import { resolveProjectUpdatedAt } from "../../lib/projectDates"
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects")
@@ -14,6 +15,7 @@ export async function getStaticPaths() {
 }
 
 const { project } = Astro.props
+const resolvedUpdatedAt = resolveProjectUpdatedAt(project)
 const { Content } = await render(project)
 const base = import.meta.env.BASE_URL
 ---
@@ -27,7 +29,7 @@ const base = import.meta.env.BASE_URL
     <h1>{project.data.title}</h1>
     <div class="meta">
       <span>作成日: {project.data.createdAt}</span>
-      <span>最終更新日: {project.data.updatedAt}</span>
+      <span>最終更新日: {resolvedUpdatedAt}</span>
     </div>
     <TagList tags={project.data.tags} linked />
     <div class="content">
