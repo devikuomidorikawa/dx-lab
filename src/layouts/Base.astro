@@ -140,9 +140,13 @@ const currentYear = new Date().getFullYear()
       }
 
       main {
-        max-width: 680px;
+        width: min(1180px, calc(100vw - 48px));
         margin: 0 auto;
-        padding: 4.75rem 1.5rem 3rem;
+        padding: 4.75rem 0 3rem;
+      }
+
+      main > * {
+        min-width: 0;
       }
 
       footer {
@@ -190,7 +194,8 @@ const currentYear = new Date().getFullYear()
         }
 
         main {
-          padding: 4.25rem 1rem 2rem;
+          width: min(100vw - 24px, 1180px);
+          padding: 4.25rem 0 2rem;
         }
 
         footer {
