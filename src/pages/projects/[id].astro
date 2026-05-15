@@ -46,6 +46,11 @@ const headingItems = tocHeadings.map((heading) => ({
               </li>
             ))}
           </ol>
+          <div class="toc__actions">
+            <LikeButton articleSlug={project.id} articleTitle={project.data.title} />
+            <a class="toc__button" href={`${base}/`}>トップページに戻る</a>
+            <a class="toc__button" href="#article-top">記事の最上部へ</a>
+          </div>
         </nav>
       </aside>
     )}
@@ -56,16 +61,10 @@ const headingItems = tocHeadings.map((heading) => ({
         <span>作成日: {project.data.createdAt}</span>
         <span>最終更新日: {resolvedUpdatedAt}</span>
       </div>
-      <LikeButton articleSlug={project.id} articleTitle={project.data.title} />
       <TagList tags={project.data.tags} linked />
       <div class="content">
         <Content />
       </div>
-      <LikeButton articleSlug={project.id} articleTitle={project.data.title} />
-      <nav class="article-nav" aria-label="ページ内ナビゲーション">
-        <a class="article-nav__button" href={`${base}/`}>トップページに戻る</a>
-        <a class="article-nav__button" href="#article-top">記事の最上部へ</a>
-      </nav>
     </div>
   </article>
 
@@ -156,6 +155,34 @@ const headingItems = tocHeadings.map((heading) => ({
       font-size: 0.86rem;
     }
 
+    .toc__actions {
+      display: grid;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .toc__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-muted);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.84rem;
+      font-weight: 600;
+    }
+
+    .toc__button:hover {
+      background: var(--surface-hover);
+      border-color: var(--border-strong);
+    }
+
     .article-main {
       min-width: 0;
     }
@@ -185,36 +212,6 @@ const headingItems = tocHeadings.map((heading) => ({
       width: 100%;
       margin-top: 1.4rem;
       margin-bottom: 1.4rem;
-    }
-
-    .article-nav {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 0.8rem;
-      margin-top: 1.8rem;
-      padding-top: 1.2rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .article-nav__button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 2.1rem;
-      padding: 0.45rem 0.8rem;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--surface-muted);
-      color: var(--text);
-      text-decoration: none;
-      font-size: 0.86rem;
-      font-weight: 600;
-    }
-
-    .article-nav__button:hover {
-      background: var(--surface-hover);
-      border-color: var(--border-strong);
     }
 
     .content {
@@ -354,6 +351,11 @@ const headingItems = tocHeadings.map((heading) => ({
         overflow: visible;
       }
 
+      .toc__actions {
+        border-top: none;
+        padding-top: 0.5rem;
+      }
+
       h1 {
         font-size: 1.3rem;
       }
@@ -361,14 +363,6 @@ const headingItems = tocHeadings.map((heading) => ({
       .meta {
         flex-direction: column;
         gap: 0.2rem;
-      }
-
-      .article-nav {
-        flex-direction: column;
-      }
-
-      .article-nav__button {
-        width: 100%;
       }
 
       .content :global(h3) {
