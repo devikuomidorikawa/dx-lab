@@ -12,6 +12,8 @@ const projects = defineCollection({
     createdAt: z.string().regex(DATE_FORMAT, "YYYY-MM-DD形式で入力してください"),
     updatedAt: z.string().regex(DATE_FORMAT, "YYYY-MM-DD形式で入力してください").optional(),
     status: z.enum(["published", "draft"]).default("published"),
+    featured: z.boolean().default(false),
+    highlightUpdated: z.boolean().default(false),
     order: z.number().optional(),
   }),
 })
