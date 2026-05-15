@@ -7,7 +7,7 @@
     {
       "binding": "DB",
       "database_name": "dx-lab-likes",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+      "database_id": "7f57a581-90ec-4276-893a-227c8944d241"
     }
   ],
   "vars": {
