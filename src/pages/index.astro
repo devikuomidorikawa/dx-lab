@@ -15,40 +15,36 @@ const base = import.meta.env.BASE_URL
 ---
 
 <Base title="DX Lab">
-  <div class="page-layout">
-    <div class="page-layout__spacer" aria-hidden="true"></div>
-    <header class="page-layout__main">
-      <h1>DX Lab</h1>
-      <p class="tagline">DX推進 &times; AI活用で、業務をもっとシンプルに</p>
-    </header>
+  <header class="hero">
+    <h1>DX Lab</h1>
+    <p class="tagline">DX推進 &times; AI活用で、業務をもっとシンプルに</p>
+  </header>
 
-    <div class="page-layout__spacer" aria-hidden="true"></div>
-    <section class="about page-layout__main">
-      <h2>About</h2>
-      <p>
-        大学職員である管理人が、AIやGoogle関連サービスなどを活用して、業務効率化の事例を紹介しています。
-      </p>
-    </section>
+  <section class="about">
+    <h2>About</h2>
+    <p>
+      大学職員である管理人が、AIやGoogle関連サービスなどを活用して、業務効率化の事例を紹介しています。
+    </p>
+  </section>
 
-    <aside class="filters" aria-label="Tag filters">
-      <div class="filters__inner">
-        <p class="filters__title">Tags</p>
-        <div class="tag-filter">
-          <button class="filter-btn active" data-tag="all">すべて</button>
-          {tagsSorted.map(([tag, count]) => (
-            <button class="filter-btn" data-tag={tag}>
-              <span>{tag}</span>
-              <span class="filter-btn__count">{count}</span>
-            </button>
-          ))}
+  <section class="projects">
+    <h2>Projects</h2>
+
+    <div class="projects__shell">
+      <aside class="filters" aria-label="Tag filters">
+        <div class="filters__inner">
+          <p class="filters__title">Tags</p>
+          <div class="tag-filter">
+            <button class="filter-btn active" data-tag="all">すべて</button>
+            {tagsSorted.map(([tag, count]) => (
+              <button class="filter-btn" data-tag={tag}>
+                <span>{tag}</span>
+                <span class="filter-btn__count">{count}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-    </aside>
-
-    <section class="projects page-layout__main">
-      <div class="projects__header">
-        <h2>Projects</h2>
-      </div>
+      </aside>
 
       <ul class="projects__list">
         {sorted.map((project) => (
@@ -62,27 +58,11 @@ const base = import.meta.env.BASE_URL
           </li>
         ))}
       </ul>
-    </section>
-  </div>
+    </div>
+  </section>
 
   <style>
-    .page-layout {
-      display: grid;
-      grid-template-columns: 200px minmax(0, 1fr);
-      column-gap: 1.75rem;
-      row-gap: 0;
-      align-items: start;
-    }
-
-    .page-layout__spacer {
-      min-height: 1px;
-    }
-
-    .page-layout__main {
-      min-width: 0;
-    }
-
-    header {
+    .hero {
       margin-bottom: 3rem;
     }
 
@@ -114,6 +94,13 @@ const base = import.meta.env.BASE_URL
       color: var(--muted);
     }
 
+    .projects__shell {
+      display: grid;
+      grid-template-columns: 200px minmax(0, 1fr);
+      gap: 1.75rem;
+      align-items: start;
+    }
+
     .filters {
       position: sticky;
       top: 4.75rem;
@@ -122,8 +109,8 @@ const base = import.meta.env.BASE_URL
 
     .filters__inner {
       padding: 1rem;
-      border-radius: 10px;
       background: var(--surface);
+      border-radius: 10px;
       box-shadow: var(--shadow);
     }
 
@@ -183,6 +170,7 @@ const base = import.meta.env.BASE_URL
       display: flex;
       flex-direction: column;
       gap: 1.25rem;
+      min-width: 0;
     }
 
     .projects__list li {
@@ -228,24 +216,19 @@ const base = import.meta.env.BASE_URL
     }
 
     @media (max-width: 920px) {
-      .page-layout {
+      .projects__shell {
         grid-template-columns: 180px minmax(0, 1fr);
-        column-gap: 1.25rem;
+        gap: 1.25rem;
       }
     }
 
     @media (max-width: 720px) {
-      .page-layout {
+      .projects__shell {
         grid-template-columns: 1fr;
-      }
-
-      .page-layout__spacer {
-        display: none;
       }
 
       .filters {
         position: static;
-        margin-bottom: 1rem;
       }
 
       .filters__inner {
@@ -255,10 +238,10 @@ const base = import.meta.env.BASE_URL
       }
 
       .tag-filter {
-        display: flex;
         flex-direction: row;
         flex-wrap: wrap;
         gap: 0.4rem;
+        margin-bottom: 1rem;
       }
 
       .filter-btn {
@@ -273,7 +256,7 @@ const base = import.meta.env.BASE_URL
     }
 
     @media (max-width: 480px) {
-      header {
+      .hero {
         margin-bottom: 2rem;
       }
 
