@@ -1,4 +1,4 @@
----
+﻿---
 import { getCollection } from "astro:content"
 import Base from "../layouts/Base.astro"
 import LikeButton from "../components/LikeButton.astro"
@@ -51,14 +51,14 @@ const base = import.meta.env.BASE_URL
   </header>
 
   <section class="about">
-    <h2>About</h2>
+    <h2>このページについて</h2>
     <p>
       大学職員である管理人が、AIやGoogle関連サービスなどを活用して、業務効率化の事例を紹介しています。
     </p>
   </section>
 
   <section class="projects">
-    <h2>Articles</h2>
+    <h2>記事</h2>
 
     {featuredProjects.length > 0 && (
       <div class="featured-projects" aria-label="注目記事">
@@ -94,7 +94,7 @@ const base = import.meta.env.BASE_URL
             <span class="sr-only">タグを検索</span>
             <input id="tag-search-input" class="tag-search__input" type="search" placeholder="タグを検索" autocomplete="off" spellcheck="false" />
           </label>
-          <p class="filters__title">Tags</p>
+          <p class="filters__title">タグ</p>
           <div class="tag-filter">
             <button class="filter-btn active" data-tag={ALL_TAG}>すべて</button>
             {tagSummary.map(([tag, count]) => (
@@ -202,6 +202,7 @@ const base = import.meta.env.BASE_URL
     }
 
     .filters__inner {
+      box-sizing: border-box;
       padding: 0.25rem 0.85rem 0.25rem 0;
       border-right: 1px solid var(--border);
       max-height: calc(100vh - 6rem);
@@ -213,6 +214,7 @@ const base = import.meta.env.BASE_URL
 
     .filters:hover .filters__inner,
     .filters:focus-within .filters__inner {
+      box-sizing: border-box;
       padding-right: 0.95rem;
       background: var(--surface);
       overflow-y: auto;
@@ -234,6 +236,8 @@ const base = import.meta.env.BASE_URL
     }
 
     .tag-search__input {
+      max-width: 100%;
+      box-sizing: border-box;
       width: 100%;
       padding: 0.55rem 0.7rem;
       border: 1px solid var(--border);
@@ -253,7 +257,7 @@ const base = import.meta.env.BASE_URL
     .tag-search__input:focus-visible {
       background: var(--surface-hover);
       border-color: var(--border-strong);
-      transform: translateX(2px);
+      transform: none;
     }
 
     .tag-search__input:focus-visible {
@@ -289,7 +293,7 @@ const base = import.meta.env.BASE_URL
       background: var(--surface-hover);
       color: var(--text);
       border-color: var(--border-strong);
-      transform: translateX(2px);
+      transform: none;
     }
 
     .filter-btn.active {
@@ -410,6 +414,7 @@ const base = import.meta.env.BASE_URL
       }
 
       .filters__inner {
+      box-sizing: border-box;
         padding: 0;
         background: transparent;
         box-shadow: none;
@@ -527,11 +532,15 @@ const base = import.meta.env.BASE_URL
         })
       })
 
-      tagSearchInput?.addEventListener("input", () => {
-        applyTagSearch(tagSearchInput.value)
-      })
+      const handleTagSearch = () => applyTagSearch(tagSearchInput?.value ?? "")
 
-      applyTagSearch(tagSearchInput?.value ?? "")
+      tagSearchInput?.addEventListener("input", handleTagSearch)
+      tagSearchInput?.addEventListener("search", handleTagSearch)
+      tagSearchInput?.addEventListener("keyup", handleTagSearch)
+
+      handleTagSearch()
     })()
   </script>
 </Base>
+
+
