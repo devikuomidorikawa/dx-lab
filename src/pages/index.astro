@@ -520,6 +520,10 @@ const base = import.meta.env.BASE_URL
 
       const applyTagFilter = (tag: string) => {
         selectedTag = tag
+        searchQuery = ""
+        if (siteSearchInput) {
+          siteSearchInput.value = ""
+        }
         applyVisibleState()
       }
 
