@@ -489,11 +489,12 @@ const base = import.meta.env.BASE_URL
       const filterButtons = Array.from(document.querySelectorAll<HTMLButtonElement>(".filter-btn"))
       const projectItems = Array.from(document.querySelectorAll<HTMLLIElement>(".projects__list li[data-tags]"))
       const siteSearchInput = document.querySelector<HTMLInputElement>(".site-search__input")
+      const allTag = "all"
 
       if (filterButtons.length === 0 || projectItems.length === 0) return
 
       const normalize = (value: string) => value.normalize("NFKC").toLocaleLowerCase().trim()
-      let selectedTag = ALL_TAG
+      let selectedTag = allTag
       let searchQuery = ""
 
       const setActiveFilter = (tag: string) => {
@@ -506,7 +507,7 @@ const base = import.meta.env.BASE_URL
       const applyVisibleState = () => {
         projectItems.forEach((item) => {
           const tags: string[] = JSON.parse(item.dataset.tags ?? "[]")
-          const matchesTag = selectedTag === ALL_TAG || tags.includes(selectedTag)
+          const matchesTag = selectedTag === allTag || tags.includes(selectedTag)
           const haystack = normalize(item.dataset.searchText ?? "")
           const matchesSearch = searchQuery.length === 0 || haystack.includes(normalize(searchQuery))
           item.classList.toggle("hidden", !(matchesTag && matchesSearch))
@@ -529,7 +530,7 @@ const base = import.meta.env.BASE_URL
 
       filterButtons.forEach((button) => {
         button.addEventListener("click", () => {
-          const tag = button.dataset.tag ?? ALL_TAG
+          const tag = button.dataset.tag ?? allTag
           setActiveFilter(tag)
           applyTagFilter(tag)
         })
