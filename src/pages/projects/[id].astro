@@ -38,10 +38,9 @@ const headingItems = tocHeadings.map((heading) => ({
         <nav class="toc">
           <p class="toc__title">目次</p>
           <ol class="toc__list">
-            {headingItems.map((heading, index) => (
+            {headingItems.map((heading) => (
               <li class:list={["toc__item", `toc__item--depth-${heading.depth}`]}>
                 <a href={`#${heading.id}`}>
-                  <span class="toc__index">{index + 1}.</span>
                   <span class="toc__text">{heading.text}</span>
                 </a>
               </li>
@@ -137,7 +136,7 @@ const headingItems = tocHeadings.map((heading) => ({
     .toc__item a {
       display: flex;
       align-items: flex-start;
-      gap: 0.55rem;
+      gap: 0.3rem;
       color: var(--text);
       text-decoration: none;
       font-size: 0.9rem;
@@ -148,20 +147,13 @@ const headingItems = tocHeadings.map((heading) => ({
       color: var(--accent);
     }
 
-    .toc__index {
-      flex-shrink: 0;
-      min-width: 1.4rem;
-      color: var(--subtle);
-      font-size: 0.72rem;
-      font-variant-numeric: tabular-nums;
-    }
-
     .toc__text {
       min-width: 0;
     }
 
     .toc__item--depth-3 {
-      padding-left: 0.8rem;
+      padding-left: 1rem;
+      font-size: 0.86rem;
     }
 
     .article-main {
@@ -228,21 +220,6 @@ const headingItems = tocHeadings.map((heading) => ({
     .content {
       border-top: 1px solid var(--border);
       padding-top: 1.8rem;
-      counter-reset: article-heading;
-    }
-
-    .content :global(h2),
-    .content :global(h3) {
-      counter-increment: article-heading;
-    }
-
-    .content :global(h2)::before,
-    .content :global(h3)::before {
-      content: counter(article-heading) ".";
-      display: inline-block;
-      margin-right: 0.18rem;
-      color: var(--subtle);
-      font-weight: 700;
     }
 
     .content :global(.mermaid) {
@@ -269,6 +246,7 @@ const headingItems = tocHeadings.map((heading) => ({
       font-weight: 600;
       margin-top: 1.5rem;
       margin-bottom: 0.5rem;
+      padding-left: 0.7rem;
     }
 
     .content :global(p) {
@@ -391,6 +369,10 @@ const headingItems = tocHeadings.map((heading) => ({
 
       .article-nav__button {
         width: 100%;
+      }
+
+      .content :global(h3) {
+        padding-left: 0.5rem;
       }
 
       .content :global(h2) {
