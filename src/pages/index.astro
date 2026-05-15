@@ -15,38 +15,40 @@ const base = import.meta.env.BASE_URL
 ---
 
 <Base title="DX Lab">
-  <header>
-    <h1>DX Lab</h1>
-    <p class="tagline">DX推進 &times; AI活用で、業務をもっとシンプルに</p>
-  </header>
+  <div class="page-layout">
+    <div class="page-layout__spacer" aria-hidden="true"></div>
+    <header class="page-layout__main">
+      <h1>DX Lab</h1>
+      <p class="tagline">DX推進 &times; AI活用で、業務をもっとシンプルに</p>
+    </header>
 
-  <section class="about">
-    <h2>About</h2>
-    <p>
-      大学職員である管理人が、AIやGoogle関連サービスなどを活用して、業務効率化の事例を紹介しています。
-    </p>
-  </section>
+    <div class="page-layout__spacer" aria-hidden="true"></div>
+    <section class="about page-layout__main">
+      <h2>About</h2>
+      <p>
+        大学職員である管理人が、AIやGoogle関連サービスなどを活用して、業務効率化の事例を紹介しています。
+      </p>
+    </section>
 
-  <section class="projects">
-    <div class="projects__header">
-      <h2>Projects</h2>
-    </div>
-
-    <div class="projects__layout">
-      <aside class="filters" aria-label="Tag filters">
-        <div class="filters__inner">
-          <p class="filters__title">Tags</p>
-          <div class="tag-filter">
-            <button class="filter-btn active" data-tag="all">すべて</button>
-            {tagsSorted.map(([tag, count]) => (
-              <button class="filter-btn" data-tag={tag}>
-                <span>{tag}</span>
-                <span class="filter-btn__count">{count}</span>
-              </button>
-            ))}
-          </div>
+    <aside class="filters" aria-label="Tag filters">
+      <div class="filters__inner">
+        <p class="filters__title">Tags</p>
+        <div class="tag-filter">
+          <button class="filter-btn active" data-tag="all">すべて</button>
+          {tagsSorted.map(([tag, count]) => (
+            <button class="filter-btn" data-tag={tag}>
+              <span>{tag}</span>
+              <span class="filter-btn__count">{count}</span>
+            </button>
+          ))}
         </div>
-      </aside>
+      </div>
+    </aside>
+
+    <section class="projects page-layout__main">
+      <div class="projects__header">
+        <h2>Projects</h2>
+      </div>
 
       <ul class="projects__list">
         {sorted.map((project) => (
@@ -60,10 +62,26 @@ const base = import.meta.env.BASE_URL
           </li>
         ))}
       </ul>
-    </div>
-  </section>
+    </section>
+  </div>
 
   <style>
+    .page-layout {
+      display: grid;
+      grid-template-columns: 200px minmax(0, 1fr);
+      column-gap: 1.75rem;
+      row-gap: 0;
+      align-items: start;
+    }
+
+    .page-layout__spacer {
+      min-height: 1px;
+    }
+
+    .page-layout__main {
+      min-width: 0;
+    }
+
     header {
       margin-bottom: 3rem;
     }
@@ -96,21 +114,14 @@ const base = import.meta.env.BASE_URL
       color: var(--muted);
     }
 
-    .projects__layout {
-      display: grid;
-      grid-template-columns: 200px minmax(0, 1fr);
-      gap: 1.75rem;
-      align-items: start;
-    }
-
     .filters {
       position: sticky;
       top: 4.75rem;
+      align-self: start;
     }
 
     .filters__inner {
       padding: 1rem;
-      border: 1px solid var(--border);
       border-radius: 10px;
       background: var(--surface);
       box-shadow: var(--shadow);
@@ -217,25 +228,28 @@ const base = import.meta.env.BASE_URL
     }
 
     @media (max-width: 920px) {
-      .projects__layout {
+      .page-layout {
         grid-template-columns: 180px minmax(0, 1fr);
-        gap: 1.25rem;
+        column-gap: 1.25rem;
       }
     }
 
     @media (max-width: 720px) {
-      .projects__layout {
+      .page-layout {
         grid-template-columns: 1fr;
+      }
+
+      .page-layout__spacer {
+        display: none;
       }
 
       .filters {
         position: static;
+        margin-bottom: 1rem;
       }
 
       .filters__inner {
         padding: 0;
-        border: 0;
-        border-radius: 0;
         background: transparent;
         box-shadow: none;
       }
@@ -245,7 +259,6 @@ const base = import.meta.env.BASE_URL
         flex-direction: row;
         flex-wrap: wrap;
         gap: 0.4rem;
-        margin-bottom: 1rem;
       }
 
       .filter-btn {
