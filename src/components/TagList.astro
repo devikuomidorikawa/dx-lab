@@ -28,15 +28,17 @@ const base = import.meta.env.BASE_URL
   .tag {
     font-size: 0.75rem;
     padding: 0.15rem 0.6rem;
-    background: #f0eeeb;
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
     border-radius: 4px;
-    color: #777;
+    color: var(--subtle);
     text-decoration: none;
-    transition: background 0.2s;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
   }
 
   a.tag:hover {
-    background: #e5e3e0;
-    color: #444;
+    background: var(--surface-hover);
+    color: var(--text);
+    border-color: var(--border-strong);
   }
 </style>

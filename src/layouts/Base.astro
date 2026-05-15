@@ -29,8 +29,18 @@ const currentYear = new Date().getFullYear()
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <title>{title}</title>
+    <script is:inline>
+      const storageKey = "dx-lab-theme";
+      const storedTheme = localStorage.getItem(storageKey);
+      const preferredDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = storedTheme || (preferredDark ? "dark" : "light");
+    </script>
   </head>
   <body>
+    <button class="theme-toggle" type="button" aria-label="Toggle color theme">
+      <span class="theme-toggle__label">Dark</span>
+    </button>
+
     <main>
       <slot />
       <footer>
@@ -38,7 +48,74 @@ const currentYear = new Date().getFullYear()
       </footer>
     </main>
 
+    <script is:inline>
+      const storageKey = "dx-lab-theme";
+      const root = document.documentElement;
+      const button = document.querySelector(".theme-toggle");
+      const label = button?.querySelector(".theme-toggle__label");
+
+      const syncThemeToggle = () => {
+        const isDark = root.dataset.theme === "dark";
+        if (label) label.textContent = isDark ? "Light" : "Dark";
+        button?.setAttribute("aria-pressed", String(isDark));
+      };
+
+      button?.addEventListener("click", () => {
+        root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+        localStorage.setItem(storageKey, root.dataset.theme);
+        syncThemeToggle();
+      });
+
+      syncThemeToggle();
+    </script>
+
     <style>
+      :root {
+        --bg: #faf9f7;
+        --surface: #ffffff;
+        --surface-muted: #f0eeeb;
+        --surface-hover: #e5e3e0;
+        --text: #444444;
+        --muted: #666666;
+        --subtle: #888888;
+        --footer: #999999;
+        --border: #e8e6e3;
+        --border-strong: #cccccc;
+        --accent: #444444;
+        --accent-contrast: #faf9f7;
+        --shadow: 0 16px 36px rgba(0, 0, 0, 0.08);
+        --toggle-bg: rgba(255, 255, 255, 0.88);
+        --toggle-border: rgba(68, 68, 68, 0.12);
+        --toggle-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+        --code-bg: #2d2d2d;
+        --code-text: #e8e6e3;
+        --success: #2a7a2a;
+        color-scheme: light;
+      }
+
+      :root[data-theme="dark"] {
+        --bg: #11161c;
+        --surface: #1a2129;
+        --surface-muted: #27313b;
+        --surface-hover: #33404d;
+        --text: #edf2f7;
+        --muted: #c0cad4;
+        --subtle: #9aa8b5;
+        --footer: #8e9baa;
+        --border: #2e3945;
+        --border-strong: #425160;
+        --accent: #edf2f7;
+        --accent-contrast: #11161c;
+        --shadow: 0 20px 40px rgba(0, 0, 0, 0.28);
+        --toggle-bg: rgba(26, 33, 41, 0.88);
+        --toggle-border: rgba(237, 242, 247, 0.14);
+        --toggle-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+        --code-bg: #0f141a;
+        --code-text: #d9e2ec;
+        --success: #3b9b52;
+        color-scheme: dark;
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -48,23 +125,60 @@ const currentYear = new Date().getFullYear()
       html {
         font-family: system-ui, -apple-system, sans-serif;
         line-height: 1.7;
-        color: #444;
-        background: #faf9f7;
+        background: var(--bg);
+        color: var(--text);
+        transition: background 0.2s ease, color 0.2s ease;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
       }
 
       main {
         max-width: 680px;
         margin: 0 auto;
-        padding: 3rem 1.5rem;
+        padding: 4.75rem 1.5rem 3rem;
       }
 
       footer {
         margin-top: 3rem;
         padding-top: 1.5rem;
-        border-top: 1px solid #e8e6e3;
+        border-top: 1px solid var(--border);
         text-align: center;
-        color: #999;
+        color: var(--footer);
         font-size: 0.85rem;
+      }
+
+      .theme-toggle {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1000;
+        min-width: 5.5rem;
+        padding: 0.55rem 0.9rem;
+        border: 1px solid var(--toggle-border);
+        border-radius: 999px;
+        background: var(--toggle-bg);
+        color: var(--text);
+        box-shadow: var(--toggle-shadow);
+        backdrop-filter: blur(10px);
+        font: inherit;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+      }
+
+      .theme-toggle:hover {
+        transform: translateY(-1px);
+      }
+
+      .theme-toggle:focus-visible {
+        outline: 2px solid var(--text);
+        outline-offset: 3px;
       }
 
       @media (max-width: 480px) {
@@ -73,11 +187,18 @@ const currentYear = new Date().getFullYear()
         }
 
         main {
-          padding: 2rem 1rem;
+          padding: 4.25rem 1rem 2rem;
         }
 
         footer {
           margin-top: 2rem;
+        }
+
+        .theme-toggle {
+          top: 0.75rem;
+          right: 0.75rem;
+          min-width: 5rem;
+          padding: 0.5rem 0.8rem;
         }
       }
     </style>

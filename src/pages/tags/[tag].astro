@@ -52,13 +52,13 @@ const base = import.meta.env.BASE_URL
     }
 
     .back a {
-      color: #777;
+      color: var(--subtle);
       text-decoration: none;
       font-size: 0.9rem;
     }
 
     .back a:hover {
-      color: #444;
+      color: var(--text);
     }
 
     header {
@@ -72,7 +72,7 @@ const base = import.meta.env.BASE_URL
 
     .count {
       margin-top: 0.3rem;
-      color: #888;
+      color: var(--subtle);
       font-size: 0.85rem;
     }
 
@@ -84,13 +84,15 @@ const base = import.meta.env.BASE_URL
     }
 
     .projects li {
-      border: 1px solid #e8e6e3;
+      border: 1px solid var(--border);
       border-radius: 8px;
-      transition: border-color 0.2s;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      transition: border-color 0.2s, background 0.2s;
     }
 
     .projects li:hover {
-      border-color: #ccc;
+      border-color: var(--border-strong);
     }
 
     .projects a {
@@ -108,9 +110,10 @@ const base = import.meta.env.BASE_URL
 
     .projects p {
       font-size: 0.9rem;
-      color: #666;
+      color: var(--muted);
       margin-bottom: 0.8rem;
     }
+
     @media (max-width: 480px) {
       h1 {
         font-size: 1.3rem;
