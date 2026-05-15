@@ -30,7 +30,7 @@ function createCorsHeaders(origin: string | null, env: Env) {
   return allowedOrigin
     ? {
         "Access-Control-Allow-Origin": allowedOrigin,
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
         Vary: "Origin",
       }
@@ -85,6 +85,14 @@ async function getLikeState(env: Env, articleSlug: string, visitorId?: string) {
   }
 }
 
+async function removeLike(env: Env, articleSlug: string, visitorId: string) {
+  await env.DB.prepare("DELETE FROM article_likes WHERE article_slug = ?1 AND visitor_id = ?2")
+    .bind(articleSlug, visitorId)
+    .run()
+
+  return getLikeState(env, articleSlug, visitorId)
+}
+
 const worker = {
   async fetch(request, env) {
     const url = new URL(request.url)
@@ -110,11 +118,24 @@ const worker = {
     }
 
     if (request.method !== "POST") {
-      return badRequest("Method not allowed.", origin, env, 405)
+      if (request.method !== "DELETE") {
+        return badRequest("Method not allowed.", origin, env, 405)
+      }
     }
 
     if (!getAllowedOrigin(origin, env)) {
       return badRequest("Origin not allowed.", origin, env, 403)
+    }
+
+    if (request.method === "DELETE") {
+      const visitorId = url.searchParams.get("visitorId")?.trim()
+
+      if (!visitorId || visitorId.length > 120) {
+        return badRequest("Invalid visitor id.", origin, env)
+      }
+
+      const state = await removeLike(env, articleSlug, visitorId)
+      return jsonResponse({ ...state, status: "removed" }, { status: 200 }, origin, env)
     }
 
     let payload: { visitorId?: string } | null = null
