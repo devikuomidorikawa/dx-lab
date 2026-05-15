@@ -4,6 +4,7 @@ import Base from "../../layouts/Base.astro"
 import TagList from "../../components/TagList.astro"
 import LikeButton from "../../components/LikeButton.astro"
 import { resolveProjectUpdatedAt } from "../../lib/projectDates"
+import Slugger from "github-slugger"
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects")
@@ -17,8 +18,15 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props
 const resolvedUpdatedAt = resolveProjectUpdatedAt(project)
-const { Content } = await render(project)
+const { Content, headings } = await render(project)
 const base = import.meta.env.BASE_URL
+const slugger = new Slugger()
+
+const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3)
+const headingItems = tocHeadings.map((heading) => ({
+  ...heading,
+  id: slugger.slug(heading.text),
+}))
 ---
 
 <Base title={`${project.data.title} | DX Lab`} description={project.data.description} ogType="article">
@@ -26,7 +34,7 @@ const base = import.meta.env.BASE_URL
     <a href={`${base}/`}>&larr; トップに戻る</a>
   </nav>
 
-  <article>
+  <article id="article-top">
     <h1>{project.data.title}</h1>
     <div class="meta">
       <span>作成日: {project.data.createdAt}</span>
@@ -34,10 +42,26 @@ const base = import.meta.env.BASE_URL
     </div>
     <LikeButton articleSlug={project.id} articleTitle={project.data.title} />
     <TagList tags={project.data.tags} linked />
+    {headingItems.length > 0 && (
+      <nav class="toc" aria-label="目次">
+        <p class="toc__title">目次</p>
+        <ol class="toc__list">
+          {headingItems.map((heading) => (
+            <li class:list={["toc__item", `toc__item--depth-${heading.depth}`]}>
+              <a href={`#${heading.id}`}>{heading.text}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    )}
     <div class="content">
       <Content />
     </div>
     <LikeButton articleSlug={project.id} articleTitle={project.data.title} />
+    <nav class="article-nav" aria-label="ページ内ナビゲーション">
+      <a class="article-nav__button" href={`${base}/`}>トップページに戻る</a>
+      <a class="article-nav__button" href="#article-top">記事の最上部へ</a>
+    </nav>
   </article>
 
   <style>
@@ -80,6 +104,76 @@ const base = import.meta.env.BASE_URL
       width: 100%;
       margin-top: 1.4rem;
       margin-bottom: 1.4rem;
+    }
+
+    .toc {
+      margin: 1.2rem 0 1.6rem;
+      padding: 1rem 1rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+
+    .toc__title {
+      margin-bottom: 0.65rem;
+      color: var(--subtle);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .toc__list {
+      display: grid;
+      gap: 0.45rem;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .toc__item a {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.92rem;
+    }
+
+    .toc__item a:hover {
+      color: var(--accent);
+    }
+
+    .toc__item--depth-3 {
+      padding-left: 0.8rem;
+      font-size: 0.88rem;
+    }
+
+    .article-nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.8rem;
+      margin-top: 1.8rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .article-nav__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.1rem;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-muted);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    .article-nav__button:hover {
+      background: var(--surface-hover);
+      border-color: var(--border-strong);
     }
 
     .content {
@@ -210,6 +304,18 @@ const base = import.meta.env.BASE_URL
       .meta {
         flex-direction: column;
         gap: 0.2rem;
+      }
+
+      .toc {
+        padding: 0.9rem 0.9rem 0.8rem;
+      }
+
+      .article-nav {
+        flex-direction: column;
+      }
+
+      .article-nav__button {
+        width: 100%;
       }
 
       .content :global(h2) {

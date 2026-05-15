@@ -224,11 +224,12 @@ const sharePath = `${base}projects/${articleSlug}/`
 
       likeButton.addEventListener("click", async () => {
         const current = stateBySlug.get(slug);
+        const isLiked = current?.liked ?? getLocalLiked(slug);
         likeButton.disabled = true;
-        setStatus(slug, current?.liked ? "いいねを取り消し中..." : "いいね中...");
+        setStatus(slug, isLiked ? "いいねを取り消し中..." : "いいね中...");
 
         try {
-          if (current?.liked) {
+          if (isLiked) {
             await removeLike(slug);
             setStatus(slug, "いいねを取り消しました。");
           } else {
