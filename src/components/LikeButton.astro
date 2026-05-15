@@ -1,25 +1,47 @@
 ---
 interface Props {
   articleSlug: string
+  articleTitle?: string
   compact?: boolean
 }
 
-const { articleSlug, compact = false } = Astro.props
+const { articleSlug, articleTitle = "", compact = false } = Astro.props
 const apiUrl = import.meta.env.PUBLIC_LIKE_API_URL ?? ""
+const base = import.meta.env.BASE_URL
+const sharePath = `${base}projects/${articleSlug}/`
 ---
 
 <section
   class:list={["like-panel", compact && "like-panel--compact"]}
   data-like-root
   data-article-slug={articleSlug}
+  data-article-title={articleTitle}
+  data-share-path={sharePath}
   data-api-url={apiUrl}
-  aria-label="いいね"
+  aria-label="いいねと共有"
 >
-  <button class="like-button" type="button" disabled>
-    <span class="like-button__label">いいね</span>
-    <span class="like-button__count" data-like-count>0</span>
-  </button>
-  <p class="like-panel__status" data-like-status>読み込み中...</p>
+  <div class="like-panel__actions">
+    <button class="icon-button like-button" type="button" disabled title="いいね" aria-label="いいね">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path
+          d="M12 21.35 10.55 20.03C5.1 15.1 2 12.24 2 8.75 2 5.89 4.24 3.7 7.11 3.7c1.62 0 3.18.76 4.18 1.95.99-1.19 2.55-1.95 4.17-1.95C18.34 3.7 20.58 5.89 20.58 8.75c0 3.49-3.1 6.35-8.58 11.28L12 21.35Z"
+        />
+      </svg>
+      <span class="sr-only">いいね</span>
+    </button>
+
+    <span class="like-count" data-like-count aria-live="polite">0</span>
+
+    <button class="icon-button share-button" type="button" title="共有" aria-label="リンクを共有">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M18 8a3 3 0 1 0-2.83-4H15a3 3 0 0 0 3 3zm-12 9a3 3 0 1 0 2.83 4H9a3 3 0 0 0-3-3zm12 0a3 3 0 1 0 2.83 4H15a3 3 0 0 0 3-3z" />
+        <path d="M8.59 15.51 15.42 19.2M15.41 4.8 8.59 8.49" />
+      </svg>
+      <span class="sr-only">共有</span>
+    </button>
+  </div>
+
+  <p class="sr-only" data-like-status>読み込み中...</p>
 </section>
 
 <script>
@@ -34,14 +56,6 @@ const apiUrl = import.meta.env.PUBLIC_LIKE_API_URL ?? ""
     }
 
     const apiUrl = roots[0].getAttribute("data-api-url") ?? "";
-
-    if (!apiUrl) {
-      roots.forEach((root) => {
-        const statusNode = root.querySelector("[data-like-status]");
-        if (statusNode) statusNode.textContent = "いいね機能は準備中です。";
-      });
-      return;
-    }
 
     const stateBySlug = new Map();
 
@@ -79,21 +93,29 @@ const apiUrl = import.meta.env.PUBLIC_LIKE_API_URL ?? ""
     const getRootsForSlug = (slug) =>
       roots.filter((root) => root.getAttribute("data-article-slug") === slug);
 
+    const setStatus = (slug, message) => {
+      getRootsForSlug(slug).forEach((root) => {
+        const statusNode = root.querySelector("[data-like-status]");
+        if (statusNode) {
+          statusNode.textContent = message;
+        }
+      });
+    };
+
     const updateRoots = (slug, nextState) => {
       stateBySlug.set(slug, nextState);
       getRootsForSlug(slug).forEach((root) => {
-        const button = root.querySelector(".like-button");
+        const likeButton = root.querySelector(".like-button");
         const countNode = root.querySelector("[data-like-count]");
-        const statusNode = root.querySelector("[data-like-status]");
+        const shareButton = root.querySelector(".share-button");
 
-        if (!button || !countNode || !statusNode) return;
+        if (!likeButton || !countNode || !shareButton) return;
 
         countNode.textContent = String(nextState.count);
-        button.disabled = nextState.liked;
-        button.classList.toggle("is-liked", nextState.liked);
-        statusNode.textContent = nextState.liked
-          ? "このブラウザでは押済みです。"
-          : "参考になったら押してください。";
+        likeButton.disabled = nextState.liked;
+        likeButton.classList.toggle("is-liked", nextState.liked);
+        likeButton.setAttribute("title", nextState.liked ? "いいね済み" : "いいね");
+        likeButton.setAttribute("aria-label", nextState.liked ? "いいね済み" : "いいね");
       });
     };
 
@@ -153,25 +175,91 @@ const apiUrl = import.meta.env.PUBLIC_LIKE_API_URL ?? ""
       });
     };
 
+    const copyText = async (value) => {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        return true;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = value;
+      textarea.setAttribute("readonly", "true");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      let copied = false;
+      try {
+        copied = document.execCommand("copy");
+      } finally {
+        textarea.remove();
+      }
+
+      return copied;
+    };
+
+    const shareArticle = async (root) => {
+      const slug = root.getAttribute("data-article-slug");
+      const sharePath = root.getAttribute("data-share-path");
+      const title = root.getAttribute("data-article-title") || document.title;
+
+      if (!slug || !sharePath) return;
+
+      const shareUrl = new URL(sharePath, window.location.origin).href;
+      const shareText = title;
+
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title,
+            text: shareText,
+            url: shareUrl,
+          });
+        } else {
+          await copyText(shareUrl);
+        }
+        setStatus(slug, "共有リンクを用意しました。");
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
+        try {
+          await copyText(shareUrl);
+          setStatus(slug, "共有リンクをコピーしました。");
+        } catch {
+          setStatus(slug, "共有に失敗しました。");
+        }
+      }
+    };
+
     const wireRoot = (root) => {
       const slug = root.getAttribute("data-article-slug");
-      const button = root.querySelector(".like-button");
+      const likeButton = root.querySelector(".like-button");
+      const shareButton = root.querySelector(".share-button");
       const countNode = root.querySelector("[data-like-count]");
       const statusNode = root.querySelector("[data-like-status]");
 
-      if (!slug || !button || !countNode || !statusNode) return;
+      if (!slug || !likeButton || !shareButton || !countNode || !statusNode) return;
 
-      button.addEventListener("click", async () => {
-        button.disabled = true;
-        statusNode.textContent = "確認中...";
+      likeButton.addEventListener("click", async () => {
+        likeButton.disabled = true;
+        setStatus(slug, "確認中...");
 
         try {
           await submitLike(slug);
+          setStatus(slug, "いいねしました。");
         } catch {
           const current = stateBySlug.get(slug);
-          button.disabled = Boolean(current?.liked);
-          statusNode.textContent = "いいねに失敗しました。時間をおいて再度お試しください。";
+          likeButton.disabled = Boolean(current?.liked);
+          setStatus(slug, "いいねに失敗しました。");
         }
+      });
+
+      shareButton.addEventListener("click", async () => {
+        setStatus(slug, "共有中...");
+        await shareArticle(root);
       });
     };
 
@@ -187,15 +275,13 @@ const apiUrl = import.meta.env.PUBLIC_LIKE_API_URL ?? ""
           count: data.count ?? 0,
           liked,
         });
+        setStatus(slug, liked ? "このブラウザでは押済みです。" : "いいねできます。");
       } catch {
         updateRoots(slug, {
           count: 0,
           liked: isLikedLocally(slug),
         });
-        getRootsForSlug(slug).forEach((root) => {
-          const statusNode = root.querySelector("[data-like-status]");
-          if (statusNode) statusNode.textContent = "いいねの読み込みに失敗しました。";
-        });
+        setStatus(slug, "いいねの読み込みに失敗しました。");
       }
     });
   })();
@@ -205,81 +291,94 @@ const apiUrl = import.meta.env.PUBLIC_LIKE_API_URL ?? ""
   .like-panel {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
-    flex-wrap: wrap;
   }
 
-  .like-panel--compact {
-    gap: 0.6rem;
-  }
-
-  .like-button {
+  .like-panel__actions {
     display: inline-flex;
     align-items: center;
-    gap: 0.65rem;
-    min-width: 7rem;
-    padding: 0.65rem 0.9rem;
+    gap: 0.45rem;
+    padding: 0.32rem 0.45rem;
     border: 1px solid var(--border);
     border-radius: 999px;
     background: var(--surface-muted);
     color: var(--text);
-    font: inherit;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+    box-shadow: var(--shadow);
+    flex-wrap: nowrap;
   }
 
-  .like-panel--compact .like-button {
-    min-width: 6.4rem;
-    padding: 0.5rem 0.8rem;
-    font-size: 0.82rem;
+  .like-panel--compact .like-panel__actions {
+    padding: 0.25rem 0.35rem;
+    gap: 0.35rem;
   }
 
-  .like-button:hover:not(:disabled) {
-    background: var(--surface-hover);
-    border-color: var(--border-strong);
-    transform: translateY(-1px);
-  }
-
-  .like-button:disabled {
-    cursor: default;
-    opacity: 0.72;
-  }
-
-  .like-button.is-liked {
-    background: var(--accent);
-    color: var(--accent-contrast);
-    border-color: var(--accent);
-    opacity: 1;
-  }
-
-  .like-button__count {
+  .icon-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 1.75rem;
-    padding: 0.08rem 0.4rem;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.18);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
   }
 
-  .like-button:not(.is-liked) .like-button__count {
-    background: var(--surface);
-    border: 1px solid var(--border);
+  .like-panel--compact .icon-button {
+    width: 1.75rem;
+    height: 1.75rem;
   }
 
-  .like-panel__status {
-    color: var(--subtle);
+  .icon-button:hover:not(:disabled) {
+    background: var(--surface-hover);
+    transform: translateY(-1px);
+  }
+
+  .icon-button:disabled {
+    cursor: default;
+    opacity: 0.55;
+  }
+
+  .icon-button svg {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .like-button.is-liked {
+    color: var(--accent);
+  }
+
+  .like-count {
+    min-width: 1.5rem;
+    padding: 0 0.2rem;
+    text-align: center;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .like-panel--compact .like-count {
     font-size: 0.82rem;
+    min-width: 1.35rem;
   }
 
-  .like-panel--compact .like-panel__status {
-    font-size: 0.76rem;
-  }
-
-  @media (max-width: 480px) {
-    .like-panel {
-      gap: 0.55rem;
-    }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 </style>

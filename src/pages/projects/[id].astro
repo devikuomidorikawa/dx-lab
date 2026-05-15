@@ -32,12 +32,12 @@ const base = import.meta.env.BASE_URL
       <span>作成日: {project.data.createdAt}</span>
       <span>最終更新日: {resolvedUpdatedAt}</span>
     </div>
-    <LikeButton articleSlug={project.id} />
+    <LikeButton articleSlug={project.id} articleTitle={project.data.title} />
     <TagList tags={project.data.tags} linked />
     <div class="content">
       <Content />
     </div>
-    <LikeButton articleSlug={project.id} />
+    <LikeButton articleSlug={project.id} articleTitle={project.data.title} />
   </article>
 
   <style>
