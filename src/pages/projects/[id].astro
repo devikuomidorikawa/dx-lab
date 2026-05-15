@@ -47,9 +47,11 @@ const headingItems = tocHeadings.map((heading) => ({
             ))}
           </ol>
           <div class="toc__actions">
-            <LikeButton articleSlug={project.id} articleTitle={project.data.title} />
-            <a class="toc__button" href={`${base}/`}>トップページに戻る</a>
-            <a class="toc__button" href="#article-top">記事の最上部へ</a>
+            <LikeButton articleSlug={project.id} articleTitle={project.data.title} compact />
+            <div class="toc__footer">
+              <a class="toc__button" href={`${base}/`}>トップページに戻る</a>
+              <a class="toc__button" href="#article-top">記事の最上部へ</a>
+            </div>
           </div>
         </nav>
       </aside>
@@ -181,6 +183,22 @@ const headingItems = tocHeadings.map((heading) => ({
     .toc__button:hover {
       background: var(--surface-hover);
       border-color: var(--border-strong);
+    }
+
+    .toc__footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .toc__footer .toc__button {
+      flex: 1 1 10rem;
+    }
+
+    .toc > :global(.reaction-bar) {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 0.9rem;
     }
 
     .article-main {
@@ -352,7 +370,6 @@ const headingItems = tocHeadings.map((heading) => ({
       }
 
       .toc__actions {
-        border-top: none;
         padding-top: 0.5rem;
       }
 
