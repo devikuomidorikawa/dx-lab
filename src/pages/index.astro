@@ -3,13 +3,32 @@ import { getCollection } from "astro:content"
 import Base from "../layouts/Base.astro"
 import TagList from "../components/TagList.astro"
 
-const allProjects = await getCollection("projects")
-const projects = allProjects.filter((p) => p.data.status !== "draft")
-const sorted = [...projects].sort((a, b) => b.data.createdAt.localeCompare(a.data.createdAt))
+const ALL_TAG = "all"
 
-const tagCounts = new Map<string, number>()
-projects.forEach((p) => p.data.tags.forEach((t) => tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1)))
-const tagsSorted = [...tagCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "ja"))
+function getPublishedProjects(projects: Awaited<ReturnType<typeof getCollection<"projects">>>) {
+  return projects.filter((project) => project.data.status !== "draft")
+}
+
+function sortProjectsByDate(projects: ReturnType<typeof getPublishedProjects>) {
+  return [...projects].sort((left, right) => right.data.createdAt.localeCompare(left.data.createdAt))
+}
+
+function buildTagSummary(projects: ReturnType<typeof getPublishedProjects>) {
+  const counts = new Map<string, number>()
+
+  projects.forEach((project) => {
+    project.data.tags.forEach((tag) => {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1)
+    })
+  })
+
+  return [...counts.entries()].sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], "ja"))
+}
+
+const allProjects = await getCollection("projects")
+const projects = getPublishedProjects(allProjects)
+const sortedProjects = sortProjectsByDate(projects)
+const tagSummary = buildTagSummary(projects)
 
 const base = import.meta.env.BASE_URL
 ---
@@ -17,13 +36,13 @@ const base = import.meta.env.BASE_URL
 <Base title="DX Lab">
   <header class="hero">
     <h1>DX Lab</h1>
-    <p class="tagline">DX推進 &times; AI活用で、業務をもっとシンプルに</p>
+    <p class="tagline">DXè¬—ï½¨é¨¾ï½² &times; AIè±¢ï½»é€•ï½¨ç¸ºï½§ç¸²âˆµï½¥ï½­èœå¶ï½’ç¹§ã‚…â–²ç¸ºï½¨ç¹§ï½·ç¹ï½³ç¹åŠ±Îç¸ºï½«</p>
   </header>
 
   <section class="about">
     <h2>About</h2>
     <p>
-      大学職員である管理人が、AIやGoogle関連サービスなどを活用して、業務効率化の事例を紹介しています。
+      èžŸï½§èŸ„ï½¦é–¨ï½·èœ©ï½¡ç¸ºï½§ç¸ºã‚…ï½‹é‚‚ï½¡é€…ãƒ»ï½ºï½ºç¸ºå¾ŒÂ€ã€Iç¹§Ð–oogleé«¢ï½¢é¨¾ï½£ç¹§ï½µç¹ï½¼ç¹è–™ã›ç¸ºï½ªç¸ºï½©ç¹§å‘ˆï½´ï½»é€•ï½¨ç¸ºåŠ±â€»ç¸²âˆµï½¥ï½­èœåæŸ‘é‚‡ãƒ»å–§ç¸ºï½®èŽ å€¶ï½¾ä¹ï½’é‚ï½¹èŽ‰ä¹ï¼ ç¸ºï½¦ç¸ºãƒ»âˆªç¸ºå¶Â€ãƒ»
     </p>
   </section>
 
@@ -35,8 +54,8 @@ const base = import.meta.env.BASE_URL
         <div class="filters__inner">
           <p class="filters__title">Tags</p>
           <div class="tag-filter">
-            <button class="filter-btn active" data-tag="all">すべて</button>
-            {tagsSorted.map(([tag, count]) => (
+            <button class="filter-btn active" data-tag={ALL_TAG}>ç¸ºå¶âˆ‹ç¸ºï½¦</button>
+            {tagSummary.map(([tag, count]) => (
               <button class="filter-btn" data-tag={tag}>
                 <span>{tag}</span>
                 <span class="filter-btn__count">{count}</span>
@@ -47,7 +66,7 @@ const base = import.meta.env.BASE_URL
       </aside>
 
       <ul class="projects__list">
-        {sorted.map((project) => (
+        {sortedProjects.map((project) => (
           <li data-tags={JSON.stringify(project.data.tags)}>
             <a href={`${base}/projects/${project.id}/`}>
               <h3>{project.data.title}</h3>
@@ -62,6 +81,12 @@ const base = import.meta.env.BASE_URL
   </section>
 
   <style>
+    .projects {
+      --sidebar-width: 200px;
+      --shell-gap: 1.75rem;
+      --card-gap: 1.25rem;
+    }
+
     .hero {
       margin-bottom: 3rem;
     }
@@ -90,14 +115,15 @@ const base = import.meta.env.BASE_URL
       margin-bottom: 2.5rem;
     }
 
-    .about p {
+    .about p,
+    .projects__list p {
       color: var(--muted);
     }
 
     .projects__shell {
       display: grid;
-      grid-template-columns: 200px minmax(0, 1fr);
-      gap: 1.75rem;
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+      gap: var(--shell-gap);
       align-items: start;
     }
 
@@ -169,7 +195,7 @@ const base = import.meta.env.BASE_URL
       list-style: none;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: var(--card-gap);
       min-width: 0;
     }
 
@@ -211,14 +237,13 @@ const base = import.meta.env.BASE_URL
 
     .projects__list p {
       font-size: 0.9rem;
-      color: var(--muted);
       margin-bottom: 0.8rem;
     }
 
     @media (max-width: 920px) {
-      .projects__shell {
-        grid-template-columns: 180px minmax(0, 1fr);
-        gap: 1.25rem;
+      .projects {
+        --sidebar-width: 180px;
+        --shell-gap: 1.25rem;
       }
     }
 
@@ -288,24 +313,37 @@ const base = import.meta.env.BASE_URL
   </style>
 
   <script>
-    const buttons = document.querySelectorAll<HTMLButtonElement>(".filter-btn")
-    const items = document.querySelectorAll<HTMLLIElement>(".projects__list li")
+    (() => {
+      const filterButtons = Array.from(document.querySelectorAll<HTMLButtonElement>(".filter-btn"))
+      const projectItems = Array.from(document.querySelectorAll<HTMLLIElement>(".projects__list li"))
 
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const tag = btn.dataset.tag
-        buttons.forEach((b) => b.classList.remove("active"))
-        btn.classList.add("active")
+      if (filterButtons.length === 0 || projectItems.length === 0) return
 
-        items.forEach((item) => {
-          if (tag === "all") {
+      const setActiveFilter = (selectedTag: string) => {
+        filterButtons.forEach((button) => {
+          button.classList.toggle("active", button.dataset.tag === selectedTag)
+        })
+      }
+
+      const applyTagFilter = (selectedTag: string) => {
+        projectItems.forEach((item) => {
+          if (selectedTag === "all") {
             item.classList.remove("hidden")
             return
           }
+
           const tags: string[] = JSON.parse(item.dataset.tags ?? "[]")
-          item.classList.toggle("hidden", !tags.includes(tag!))
+          item.classList.toggle("hidden", !tags.includes(selectedTag))
+        })
+      }
+
+      filterButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const selectedTag = button.dataset.tag ?? "all"
+          setActiveFilter(selectedTag)
+          applyTagFilter(selectedTag)
         })
       })
-    })
+    })()
   </script>
 </Base>
