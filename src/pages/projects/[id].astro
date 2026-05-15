@@ -34,34 +34,42 @@ const headingItems = tocHeadings.map((heading) => ({
     <a href={`${base}/`}>&larr; トップに戻る</a>
   </nav>
 
-  <article id="article-top">
-    <h1>{project.data.title}</h1>
-    <div class="meta">
-      <span>作成日: {project.data.createdAt}</span>
-      <span>最終更新日: {resolvedUpdatedAt}</span>
-    </div>
-    <LikeButton articleSlug={project.id} articleTitle={project.data.title} />
-    <TagList tags={project.data.tags} linked />
+  <article class="article-layout" id="article-top">
     {headingItems.length > 0 && (
-      <nav class="toc" aria-label="目次">
-        <p class="toc__title">目次</p>
-        <ol class="toc__list">
-          {headingItems.map((heading) => (
-            <li class:list={["toc__item", `toc__item--depth-${heading.depth}`]}>
-              <a href={`#${heading.id}`}>{heading.text}</a>
-            </li>
-          ))}
-        </ol>
-      </nav>
+      <aside class="toc-shell" aria-label="目次">
+        <nav class="toc">
+          <p class="toc__title">目次</p>
+          <ol class="toc__list">
+            {headingItems.map((heading, index) => (
+              <li class:list={["toc__item", `toc__item--depth-${heading.depth}`]}>
+                <a href={`#${heading.id}`}>
+                  <span class="toc__index">{String(index + 1).padStart(2, "0")}</span>
+                  <span class="toc__text">{heading.text}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      </aside>
     )}
-    <div class="content">
-      <Content />
+
+    <div class="article-main">
+      <h1>{project.data.title}</h1>
+      <div class="meta">
+        <span>作成日: {project.data.createdAt}</span>
+        <span>最終更新日: {resolvedUpdatedAt}</span>
+      </div>
+      <LikeButton articleSlug={project.id} articleTitle={project.data.title} />
+      <TagList tags={project.data.tags} linked />
+      <div class="content">
+        <Content />
+      </div>
+      <LikeButton articleSlug={project.id} articleTitle={project.data.title} />
+      <nav class="article-nav" aria-label="ページ内ナビゲーション">
+        <a class="article-nav__button" href={`${base}/`}>トップページに戻る</a>
+        <a class="article-nav__button" href="#article-top">記事の最上部へ</a>
+      </nav>
     </div>
-    <LikeButton articleSlug={project.id} articleTitle={project.data.title} />
-    <nav class="article-nav" aria-label="ページ内ナビゲーション">
-      <a class="article-nav__button" href={`${base}/`}>トップページに戻る</a>
-      <a class="article-nav__button" href="#article-top">記事の最上部へ</a>
-    </nav>
   </article>
 
   <style>
@@ -79,6 +87,83 @@ const headingItems = tocHeadings.map((heading) => ({
       color: var(--text);
     }
 
+    .article-layout {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 1.75rem;
+      align-items: start;
+    }
+
+    .toc-shell {
+      position: sticky;
+      top: 4.75rem;
+      align-self: start;
+    }
+
+    .toc {
+      padding: 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      max-height: calc(100vh - 6rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+    }
+
+    .toc__title {
+      margin-bottom: 0.85rem;
+      color: var(--subtle);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .toc__list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .toc__item a {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .toc__item a:hover {
+      color: var(--accent);
+    }
+
+    .toc__index {
+      flex-shrink: 0;
+      min-width: 1.65rem;
+      color: var(--subtle);
+      font-size: 0.72rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .toc__text {
+      min-width: 0;
+    }
+
+    .toc__item--depth-3 {
+      padding-left: 0.8rem;
+    }
+
+    .article-main {
+      min-width: 0;
+    }
+
     h1 {
       font-size: 1.6rem;
       font-weight: 700;
@@ -94,56 +179,16 @@ const headingItems = tocHeadings.map((heading) => ({
       margin-bottom: 0.8rem;
     }
 
-    article > :global(.tags) {
+    .article-main > :global(.tags) {
       margin-bottom: 2rem;
     }
 
-    article > :global(.reaction-bar) {
+    .article-main > :global(.reaction-bar) {
       display: flex;
       justify-content: flex-end;
       width: 100%;
       margin-top: 1.4rem;
       margin-bottom: 1.4rem;
-    }
-
-    .toc {
-      margin: 1.2rem 0 1.6rem;
-      padding: 1rem 1rem 0.9rem;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--surface);
-    }
-
-    .toc__title {
-      margin-bottom: 0.65rem;
-      color: var(--subtle);
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .toc__list {
-      display: grid;
-      gap: 0.45rem;
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .toc__item a {
-      color: var(--text);
-      text-decoration: none;
-      font-size: 0.92rem;
-    }
-
-    .toc__item a:hover {
-      color: var(--accent);
-    }
-
-    .toc__item--depth-3 {
-      padding-left: 0.8rem;
-      font-size: 0.88rem;
     }
 
     .article-nav {
@@ -297,6 +342,19 @@ const headingItems = tocHeadings.map((heading) => ({
     }
 
     @media (max-width: 480px) {
+      .article-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .toc-shell {
+        position: static;
+      }
+
+      .toc {
+        max-height: none;
+        overflow: visible;
+      }
+
       h1 {
         font-size: 1.3rem;
       }
@@ -304,10 +362,6 @@ const headingItems = tocHeadings.map((heading) => ({
       .meta {
         flex-direction: column;
         gap: 0.2rem;
-      }
-
-      .toc {
-        padding: 0.9rem 0.9rem 0.8rem;
       }
 
       .article-nav {
