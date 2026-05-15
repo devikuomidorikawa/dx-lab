@@ -30,10 +30,11 @@ const currentYear = new Date().getFullYear()
     <meta name="twitter:description" content={description} />
     <title>{title}</title>
     <script is:inline>
-      const storageKey = "dx-lab-theme";
-      const storedTheme = localStorage.getItem(storageKey);
-      const preferredDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      document.documentElement.dataset.theme = storedTheme || (preferredDark ? "dark" : "light");
+      (() => {
+        const storageKey = "dx-lab-theme";
+        const storedTheme = localStorage.getItem(storageKey);
+        document.documentElement.dataset.theme = storedTheme === "dark" ? "dark" : "light";
+      })();
     </script>
   </head>
   <body>
@@ -49,24 +50,26 @@ const currentYear = new Date().getFullYear()
     </main>
 
     <script is:inline>
-      const storageKey = "dx-lab-theme";
-      const root = document.documentElement;
-      const button = document.querySelector(".theme-toggle");
-      const label = button?.querySelector(".theme-toggle__label");
+      (() => {
+        const storageKey = "dx-lab-theme";
+        const root = document.documentElement;
+        const button = document.querySelector(".theme-toggle");
+        const label = button?.querySelector(".theme-toggle__label");
 
-      const syncThemeToggle = () => {
-        const isDark = root.dataset.theme === "dark";
-        if (label) label.textContent = isDark ? "Light" : "Dark";
-        button?.setAttribute("aria-pressed", String(isDark));
-      };
+        const syncThemeToggle = () => {
+          const isDark = root.dataset.theme === "dark";
+          if (label) label.textContent = isDark ? "Light" : "Dark";
+          button?.setAttribute("aria-pressed", String(isDark));
+        };
 
-      button?.addEventListener("click", () => {
-        root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
-        localStorage.setItem(storageKey, root.dataset.theme);
+        button?.addEventListener("click", () => {
+          root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+          localStorage.setItem(storageKey, root.dataset.theme);
+          syncThemeToggle();
+        });
+
         syncThemeToggle();
-      });
-
-      syncThemeToggle();
+      })();
     </script>
 
     <style>
