@@ -26,6 +26,11 @@ order: 4
 
 **Google Workspace Studio の Flows** を使い、契約書ファイルから更新期限を AI で自動抽出し、期限の一定期間前にリマインダーメールを送信するフローを構築した。
 
+## 前提条件
+
+- Google Workspace Studio の Flows を利用できる Google Workspace エディションであること
+- 管理者により Workspace Studio と Gemini 関連機能が有効化されていること
+
 ## フローの全体像
 
 ```

@@ -79,8 +79,9 @@ flowchart TD
 
 ## 前提条件
 
-- Google Workspace Business Standard 以上（`=AI()` 関数の利用に必要）
+- Google Sheets の `=AI()` 関数を利用できる Google Workspace または Google AI の対象プラン
 - Google Apps Script の実行権限
+- 管理者設定と言語設定で `=AI()` 関数が利用可能であること
 
 ## 構築手順
 

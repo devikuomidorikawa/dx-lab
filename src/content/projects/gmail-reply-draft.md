@@ -29,8 +29,9 @@ order: 31
 
 ## 前提条件
 
-- Google Workspace Business Standard 以上、または Google One AI Premium プラン
+- Gemini in Gmail を利用できる Google Workspace または Google AI の対象プラン
 - Gmail の Gemini 機能が管理者により有効化されていること
+- Gem を Gmail のサイドパネルで使う場合は、対象言語と管理者設定が対応していること
 
 ## 返信メールの作成
 
