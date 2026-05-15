@@ -36,13 +36,13 @@ const base = import.meta.env.BASE_URL
 <Base title="DX Lab">
   <header class="hero">
     <h1>DX Lab</h1>
-    <p class="tagline">DXè¬—ï½¨é¨¾ï½² &times; AIè±¢ï½»é€•ï½¨ç¸ºï½§ç¸²âˆµï½¥ï½­èœå¶ï½’ç¹§ã‚…â–²ç¸ºï½¨ç¹§ï½·ç¹ï½³ç¹åŠ±Îç¸ºï½«</p>
+    <p class="tagline">DX推進 &times; AI活用で、業務をもっとシンプルに</p>
   </header>
 
   <section class="about">
     <h2>About</h2>
     <p>
-      èžŸï½§èŸ„ï½¦é–¨ï½·èœ©ï½¡ç¸ºï½§ç¸ºã‚…ï½‹é‚‚ï½¡é€…ãƒ»ï½ºï½ºç¸ºå¾ŒÂ€ã€Iç¹§Ð–oogleé«¢ï½¢é¨¾ï½£ç¹§ï½µç¹ï½¼ç¹è–™ã›ç¸ºï½ªç¸ºï½©ç¹§å‘ˆï½´ï½»é€•ï½¨ç¸ºåŠ±â€»ç¸²âˆµï½¥ï½­èœåæŸ‘é‚‡ãƒ»å–§ç¸ºï½®èŽ å€¶ï½¾ä¹ï½’é‚ï½¹èŽ‰ä¹ï¼ ç¸ºï½¦ç¸ºãƒ»âˆªç¸ºå¶Â€ãƒ»
+      大学職員である管理人が、AIやGoogle関連サービスなどを活用して、業務効率化の事例を紹介しています。
     </p>
   </section>
 
@@ -54,7 +54,7 @@ const base = import.meta.env.BASE_URL
         <div class="filters__inner">
           <p class="filters__title">Tags</p>
           <div class="tag-filter">
-            <button class="filter-btn active" data-tag={ALL_TAG}>ç¸ºå¶âˆ‹ç¸ºï½¦</button>
+            <button class="filter-btn active" data-tag={ALL_TAG}>すべて</button>
             {tagSummary.map(([tag, count]) => (
               <button class="filter-btn" data-tag={tag}>
                 <span>{tag}</span>
@@ -327,7 +327,7 @@ const base = import.meta.env.BASE_URL
 
       const applyTagFilter = (selectedTag: string) => {
         projectItems.forEach((item) => {
-          if (selectedTag === "all") {
+          if (selectedTag === ALL_TAG) {
             item.classList.remove("hidden")
             return
           }
@@ -339,7 +339,7 @@ const base = import.meta.env.BASE_URL
 
       filterButtons.forEach((button) => {
         button.addEventListener("click", () => {
-          const selectedTag = button.dataset.tag ?? "all"
+          const selectedTag = button.dataset.tag ?? ALL_TAG
           setActiveFilter(selectedTag)
           applyTagFilter(selectedTag)
         })
