@@ -36,11 +36,25 @@ const currentYear = new Date().getFullYear()
         document.documentElement.dataset.theme = storedTheme === "dark" ? "dark" : "light";
       })();
     </script>
-  </head>
+</head>
   <body>
-    <button class="theme-toggle" type="button" aria-label="Toggle color theme">
-      <span class="theme-toggle__label">Dark</span>
-    </button>
+    <div class="top-tools">
+      <button class="theme-toggle" type="button" aria-label="Toggle color theme">
+        <span class="theme-toggle__label">Dark</span>
+      </button>
+
+      <form class="site-search" role="search" data-base={base}>
+        <label class="sr-only" for="site-search-input">サイト内検索</label>
+        <input
+          id="site-search-input"
+          class="site-search__input"
+          type="search"
+          placeholder="サイト内検索"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </form>
+    </div>
 
     <main>
       <slot />
@@ -69,6 +83,72 @@ const currentYear = new Date().getFullYear()
         });
 
         syncThemeToggle();
+      })();
+    </script>
+
+    <script is:inline>
+      (() => {
+        const searchForm = document.querySelector(".site-search");
+        const searchInput = searchForm?.querySelector(".site-search__input");
+        const searchCards = Array.from(document.querySelectorAll(".projects__list li[data-search-text]"));
+        const hasSearchableCards = searchCards.length > 0;
+        const basePath = searchForm?.dataset.base ?? "/";
+        const url = new URL(window.location.href);
+
+        const normalize = (value) => value.normalize("NFKC").toLocaleLowerCase().trim();
+
+        const applySearch = (query) => {
+          if (!hasSearchableCards) return;
+
+          const normalizedQuery = normalize(query);
+
+          searchCards.forEach((card) => {
+            const haystack = normalize(card.dataset.searchText ?? "");
+            const visible = normalizedQuery.length === 0 || haystack.includes(normalizedQuery);
+            card.classList.toggle("site-hidden", !visible);
+          });
+
+          if (normalizedQuery.length === 0) {
+            url.searchParams.delete("q");
+          } else {
+            url.searchParams.set("q", query.trim());
+          }
+
+          window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+        };
+
+        const initialQuery = new URLSearchParams(window.location.search).get("q") ?? "";
+
+        if (searchInput) {
+          searchInput.value = initialQuery;
+        }
+
+        if (hasSearchableCards) {
+          applySearch(initialQuery);
+        }
+
+        searchInput?.addEventListener("input", () => {
+          if (hasSearchableCards) {
+            applySearch(searchInput.value);
+          }
+        });
+
+        searchForm?.addEventListener("submit", (event) => {
+          event.preventDefault();
+
+          const query = searchInput?.value.trim() ?? "";
+
+          if (hasSearchableCards) {
+            applySearch(query);
+            return;
+          }
+
+          const target = new URL(basePath, window.location.origin);
+          if (query.length > 0) {
+            target.searchParams.set("q", query);
+          }
+          window.location.href = target.toString();
+        });
       })();
     </script>
 
@@ -158,11 +238,24 @@ const currentYear = new Date().getFullYear()
         font-size: 0.85rem;
       }
 
-      .theme-toggle {
+      .top-tools {
         position: fixed;
         top: 1rem;
         right: 1rem;
         z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.55rem;
+        width: min(15rem, calc(100vw - 1.5rem));
+      }
+
+      .theme-toggle,
+      .site-search {
+        width: 100%;
+      }
+
+      .theme-toggle {
         min-width: 5.5rem;
         padding: 0.55rem 0.9rem;
         border: 1px solid var(--toggle-border);
@@ -188,6 +281,51 @@ const currentYear = new Date().getFullYear()
         outline-offset: 3px;
       }
 
+      .site-search {
+        display: block;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .site-search__input {
+        width: 100%;
+        padding: 0.55rem 0.9rem;
+        border: 1px solid var(--toggle-border);
+        border-radius: 999px;
+        background: var(--toggle-bg);
+        color: var(--text);
+        box-shadow: var(--toggle-shadow);
+        backdrop-filter: blur(10px);
+        font: inherit;
+        font-size: 0.8rem;
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+      }
+
+      .site-search__input::placeholder {
+        color: var(--subtle);
+      }
+
+      .site-search__input:hover,
+      .site-search__input:focus-visible {
+        border-color: var(--border-strong);
+        transform: translateY(-1px);
+      }
+
+      .site-search__input:focus-visible {
+        outline: 2px solid var(--text);
+        outline-offset: 3px;
+      }
+
       @media (max-width: 480px) {
         html {
           font-size: 15px;
@@ -202,9 +340,15 @@ const currentYear = new Date().getFullYear()
           margin-top: 2rem;
         }
 
-        .theme-toggle {
+        .top-tools {
           top: 0.75rem;
           right: 0.75rem;
+          width: calc(100vw - 1.5rem);
+          gap: 0.45rem;
+        }
+
+        .theme-toggle,
+        .site-search__input {
           min-width: 5rem;
           padding: 0.5rem 0.8rem;
         }
