@@ -98,8 +98,8 @@ const base = import.meta.env.BASE_URL
 
     .projects__layout {
       display: grid;
-      grid-template-columns: minmax(190px, 240px) minmax(0, 1fr);
-      gap: 2rem;
+      grid-template-columns: 200px minmax(0, 1fr);
+      gap: 1.75rem;
       align-items: start;
     }
 
@@ -169,9 +169,9 @@ const base = import.meta.env.BASE_URL
 
     .projects__list {
       list-style: none;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
     }
 
     .projects__list li {
@@ -192,8 +192,7 @@ const base = import.meta.env.BASE_URL
 
     .projects__list a {
       display: block;
-      height: 100%;
-      padding: 1.25rem 1.3rem;
+      padding: 1.2rem;
       text-decoration: none;
       color: inherit;
     }
@@ -217,14 +216,10 @@ const base = import.meta.env.BASE_URL
       margin-bottom: 0.8rem;
     }
 
-    @media (max-width: 1040px) {
+    @media (max-width: 920px) {
       .projects__layout {
-        grid-template-columns: 190px minmax(0, 1fr);
-        gap: 1.5rem;
-      }
-
-      .projects__list {
-        grid-template-columns: 1fr;
+        grid-template-columns: 180px minmax(0, 1fr);
+        gap: 1.25rem;
       }
     }
 
