@@ -4,7 +4,6 @@ import Base from "../../layouts/Base.astro"
 import TagList from "../../components/TagList.astro"
 import LikeButton from "../../components/LikeButton.astro"
 import { resolveProjectUpdatedAt } from "../../lib/projectDates"
-import Slugger from "github-slugger"
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects")
@@ -20,12 +19,11 @@ const { project } = Astro.props
 const resolvedUpdatedAt = resolveProjectUpdatedAt(project)
 const { Content, headings } = await render(project)
 const base = import.meta.env.BASE_URL
-const slugger = new Slugger()
 
 const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3)
 const headingItems = tocHeadings.map((heading) => ({
   ...heading,
-  id: slugger.slug(heading.text),
+  id: heading.slug,
 }))
 ---
 
@@ -43,7 +41,7 @@ const headingItems = tocHeadings.map((heading) => ({
             {headingItems.map((heading, index) => (
               <li class:list={["toc__item", `toc__item--depth-${heading.depth}`]}>
                 <a href={`#${heading.id}`}>
-                  <span class="toc__index">{String(index + 1).padStart(2, "0")}</span>
+                  <span class="toc__index">{index + 1}.</span>
                   <span class="toc__text">{heading.text}</span>
                 </a>
               </li>
@@ -101,15 +99,21 @@ const headingItems = tocHeadings.map((heading) => ({
     }
 
     .toc {
-      padding: 1rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
+      padding: 0.25rem 0 0.25rem 0.85rem;
+      border-left: 1px solid var(--border);
       max-height: calc(100vh - 6rem);
-      overflow-y: auto;
+      overflow: hidden;
       overscroll-behavior: contain;
       scrollbar-gutter: stable;
+      transition: background 0.18s ease, border-color 0.18s ease, padding 0.18s ease;
+    }
+
+    .toc-shell:hover .toc,
+    .toc-shell:focus-within .toc {
+      padding-left: 0.95rem;
+      background: var(--surface);
+      overflow-y: auto;
+      border-left-color: var(--border-strong);
     }
 
     .toc__title {
@@ -146,7 +150,7 @@ const headingItems = tocHeadings.map((heading) => ({
 
     .toc__index {
       flex-shrink: 0;
-      min-width: 1.65rem;
+      min-width: 1.4rem;
       color: var(--subtle);
       font-size: 0.72rem;
       font-variant-numeric: tabular-nums;
@@ -224,6 +228,21 @@ const headingItems = tocHeadings.map((heading) => ({
     .content {
       border-top: 1px solid var(--border);
       padding-top: 1.8rem;
+      counter-reset: article-heading;
+    }
+
+    .content :global(h2),
+    .content :global(h3) {
+      counter-increment: article-heading;
+    }
+
+    .content :global(h2)::before,
+    .content :global(h3)::before {
+      content: counter(article-heading) ".";
+      display: inline-block;
+      margin-right: 0.18rem;
+      color: var(--subtle);
+      font-weight: 700;
     }
 
     .content :global(.mermaid) {
@@ -351,6 +370,8 @@ const headingItems = tocHeadings.map((heading) => ({
       }
 
       .toc {
+        padding: 0;
+        border-left: none;
         max-height: none;
         overflow: visible;
       }
