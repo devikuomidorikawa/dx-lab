@@ -47,7 +47,7 @@ const base = import.meta.env.BASE_URL
 <Base title="DX Lab">
   <header class="hero">
     <h1>DX Lab</h1>
-    <p class="tagline">DX推進 &times; AI活用で、業務をもっとシンプルに</p>
+    <p class="tagline">DX推進 × AI活用で、業務をもっとシンプルに</p>
   </header>
 
   <section class="about">
@@ -92,13 +92,20 @@ const base = import.meta.env.BASE_URL
         <div class="filters__inner">
           <label class="tag-search" for="tag-search-input">
             <span class="sr-only">タグを検索</span>
-            <input id="tag-search-input" class="tag-search__input" type="search" placeholder="タグを検索" autocomplete="off" spellcheck="false" />
+            <input
+              id="tag-search-input"
+              class="tag-search__input"
+              type="search"
+              placeholder="タグを検索"
+              autocomplete="off"
+              spellcheck="false"
+            />
           </label>
           <p class="filters__title">タグ</p>
           <div class="tag-filter">
-            <button class="filter-btn active" data-tag={ALL_TAG}>すべて</button>
+            <button class="filter-btn active" type="button" data-tag={ALL_TAG}>すべて</button>
             {tagSummary.map(([tag, count]) => (
-              <button class="filter-btn" data-tag={tag}>
+              <button class="filter-btn" type="button" data-tag={tag}>
                 <span>{tag}</span>
                 <span class="filter-btn__count">{count}</span>
               </button>
@@ -233,12 +240,14 @@ const base = import.meta.env.BASE_URL
     .tag-search {
       display: block;
       margin-bottom: 0.85rem;
+      margin-left: 0.35rem;
+      width: calc(100% - 0.35rem);
     }
 
     .tag-search__input {
+      width: 100%;
       max-width: 100%;
       box-sizing: border-box;
-      width: 100%;
       padding: 0.55rem 0.7rem;
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -246,7 +255,7 @@ const base = import.meta.env.BASE_URL
       color: var(--text);
       font: inherit;
       font-size: 0.8rem;
-      transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
     }
 
     .tag-search__input::placeholder {
@@ -257,7 +266,6 @@ const base = import.meta.env.BASE_URL
     .tag-search__input:focus-visible {
       background: var(--surface-hover);
       border-color: var(--border-strong);
-      transform: none;
     }
 
     .tag-search__input:focus-visible {
@@ -331,10 +339,6 @@ const base = import.meta.env.BASE_URL
     }
 
     .projects__list li.hidden {
-      display: none;
-    }
-
-    .projects__list li.site-hidden {
       display: none;
     }
 
@@ -414,7 +418,6 @@ const base = import.meta.env.BASE_URL
       }
 
       .filters__inner {
-      box-sizing: border-box;
         padding: 0;
         background: transparent;
         box-shadow: none;
@@ -443,9 +446,9 @@ const base = import.meta.env.BASE_URL
         transform: none;
       }
 
-      .tag-search__input:hover,
-      .tag-search__input:focus-visible {
-        transform: none;
+      .tag-search {
+        margin-left: 0;
+        width: 100%;
       }
     }
 
@@ -490,26 +493,30 @@ const base = import.meta.env.BASE_URL
       if (filterButtons.length === 0 || projectItems.length === 0) return
 
       const normalize = (value: string) => value.normalize("NFKC").toLocaleLowerCase().trim()
+      let selectedTag = ALL_TAG
+      let searchQuery = ""
 
-      const setActiveFilter = (selectedTag: string) => {
+      const setActiveFilter = (tag: string) => {
+        selectedTag = tag
         filterButtons.forEach((button) => {
-          button.classList.toggle("active", button.dataset.tag === selectedTag)
+          button.classList.toggle("active", button.dataset.tag === tag)
         })
       }
 
-      const applyTagFilter = (selectedTag: string) => {
+      const applyTagFilter = (tag: string) => {
         projectItems.forEach((item) => {
-          if (selectedTag === ALL_TAG) {
+          if (tag === ALL_TAG) {
             item.classList.remove("hidden")
             return
           }
 
           const tags: string[] = JSON.parse(item.dataset.tags ?? "[]")
-          item.classList.toggle("hidden", !tags.includes(selectedTag))
+          item.classList.toggle("hidden", !tags.includes(tag))
         })
       }
 
       const applyTagSearch = (query: string) => {
+        searchQuery = query
         const normalizedQuery = normalize(query)
 
         filterButtons.forEach((button) => {
@@ -526,9 +533,9 @@ const base = import.meta.env.BASE_URL
 
       filterButtons.forEach((button) => {
         button.addEventListener("click", () => {
-          const selectedTag = button.dataset.tag ?? ALL_TAG
-          setActiveFilter(selectedTag)
-          applyTagFilter(selectedTag)
+          const tag = button.dataset.tag ?? ALL_TAG
+          setActiveFilter(tag)
+          applyTagFilter(tag)
         })
       })
 
@@ -539,8 +546,7 @@ const base = import.meta.env.BASE_URL
       tagSearchInput?.addEventListener("keyup", handleTagSearch)
 
       handleTagSearch()
+      applyTagFilter(selectedTag)
     })()
   </script>
 </Base>
-
-
