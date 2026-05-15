@@ -107,6 +107,7 @@ const sharePath = `${base}projects/${articleSlug}/`
         if (!likeButton || !shareButton || !countNode) return;
 
         countNode.textContent = String(nextState.count);
+        likeButton.disabled = false;
         likeButton.classList.toggle("is-liked", nextState.liked);
         likeButton.setAttribute("title", nextState.liked ? "いいねを取り消す" : "いいね");
         likeButton.setAttribute("aria-label", nextState.liked ? "いいねを取り消す" : "いいね");
@@ -236,8 +237,9 @@ const sharePath = `${base}projects/${articleSlug}/`
           }
         } catch {
           const latest = stateBySlug.get(slug);
-          likeButton.disabled = false;
           setStatus(slug, latest?.liked ? "いいね済みです。" : "いいねに失敗しました。");
+        } finally {
+          likeButton.disabled = false;
         }
       });
 
