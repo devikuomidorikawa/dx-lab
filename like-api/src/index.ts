@@ -7,7 +7,6 @@ export interface Env {
       }
     }
   }
-  TURNSTILE_SECRET_KEY: string
   ALLOWED_ORIGINS: string
 }
 
@@ -86,24 +85,6 @@ async function getLikeState(env: Env, articleSlug: string, visitorId?: string) {
   }
 }
 
-async function verifyTurnstileToken(env: Env, token: string, remoteIp: string | null) {
-  const formData = new FormData()
-  formData.append("secret", env.TURNSTILE_SECRET_KEY)
-  formData.append("response", token)
-
-  if (remoteIp) formData.append("remoteip", remoteIp)
-
-  const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-    method: "POST",
-    body: formData,
-  })
-
-  if (!response.ok) return false
-
-  const result = await response.json<{ success?: boolean }>()
-  return Boolean(result.success)
-}
-
 const worker = {
   async fetch(request, env) {
     const url = new URL(request.url)
@@ -136,7 +117,7 @@ const worker = {
       return badRequest("Origin not allowed.", origin, env, 403)
     }
 
-    let payload: { visitorId?: string; turnstileToken?: string } | null = null
+    let payload: { visitorId?: string } | null = null
 
     try {
       payload = await request.json()
@@ -145,20 +126,9 @@ const worker = {
     }
 
     const visitorId = payload?.visitorId?.trim()
-    const turnstileToken = payload?.turnstileToken?.trim()
 
     if (!visitorId || visitorId.length > 120) {
       return badRequest("Invalid visitor id.", origin, env)
-    }
-
-    if (!turnstileToken) {
-      return badRequest("Missing verification token.", origin, env)
-    }
-
-    const verified = await verifyTurnstileToken(env, turnstileToken, request.headers.get("CF-Connecting-IP"))
-
-    if (!verified) {
-      return badRequest("Verification failed.", origin, env, 403)
     }
 
     let status = "liked"
