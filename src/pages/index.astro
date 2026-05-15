@@ -9,7 +9,7 @@ const sorted = [...projects].sort((a, b) => b.data.createdAt.localeCompare(a.dat
 
 const tagCounts = new Map<string, number>()
 projects.forEach((p) => p.data.tags.forEach((t) => tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1)))
-const tagsSorted = [...tagCounts.entries()].sort((a, b) => b[1] - a[1])
+const tagsSorted = [...tagCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "ja"))
 
 const base = import.meta.env.BASE_URL
 ---
@@ -28,27 +28,39 @@ const base = import.meta.env.BASE_URL
   </section>
 
   <section class="projects">
-    <h2>Projects</h2>
-
-    <div class="tag-filter">
-      <button class="filter-btn active" data-tag="all">すべて</button>
-      {tagsSorted.map(([tag, count]) => (
-        <button class="filter-btn" data-tag={tag}>{tag} ({count})</button>
-      ))}
+    <div class="projects__header">
+      <h2>Projects</h2>
     </div>
 
-    <ul>
-      {sorted.map((project) => (
-        <li data-tags={JSON.stringify(project.data.tags)}>
-          <a href={`${base}/projects/${project.id}/`}>
-            <h3>{project.data.title}</h3>
-            <time>{project.data.createdAt}</time>
-            <p>{project.data.description}</p>
-            <TagList tags={project.data.tags} />
-          </a>
-        </li>
-      ))}
-    </ul>
+    <div class="projects__layout">
+      <aside class="filters" aria-label="Tag filters">
+        <div class="filters__inner">
+          <p class="filters__title">Tags</p>
+          <div class="tag-filter">
+            <button class="filter-btn active" data-tag="all">すべて</button>
+            {tagsSorted.map(([tag, count]) => (
+              <button class="filter-btn" data-tag={tag}>
+                <span>{tag}</span>
+                <span class="filter-btn__count">{count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </aside>
+
+      <ul class="projects__list">
+        {sorted.map((project) => (
+          <li data-tags={JSON.stringify(project.data.tags)}>
+            <a href={`${base}/projects/${project.id}/`}>
+              <h3>{project.data.title}</h3>
+              <time>{project.data.createdAt}</time>
+              <p>{project.data.description}</p>
+              <TagList tags={project.data.tags} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
   </section>
 
   <style>
@@ -84,28 +96,63 @@ const base = import.meta.env.BASE_URL
       color: var(--muted);
     }
 
+    .projects__layout {
+      display: grid;
+      grid-template-columns: minmax(160px, 200px) minmax(0, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .filters {
+      position: sticky;
+      top: 4.75rem;
+    }
+
+    .filters__inner {
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .filters__title {
+      margin-bottom: 0.85rem;
+      color: var(--subtle);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
     .tag-filter {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-bottom: 1.5rem;
+      flex-direction: column;
+      gap: 0.5rem;
     }
 
     .filter-btn {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      width: 100%;
+      font-size: 0.8rem;
+      padding: 0.55rem 0.7rem;
       background: var(--surface-muted);
       border: 1px solid var(--border);
-      border-radius: 4px;
+      border-radius: 6px;
       color: var(--subtle);
+      text-align: left;
       cursor: pointer;
-      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
     }
 
     .filter-btn:hover {
       background: var(--surface-hover);
       color: var(--text);
       border-color: var(--border-strong);
+      transform: translateX(2px);
     }
 
     .filter-btn.active {
@@ -114,14 +161,20 @@ const base = import.meta.env.BASE_URL
       border-color: var(--accent);
     }
 
-    .projects ul {
+    .filter-btn__count {
+      flex-shrink: 0;
+      font-size: 0.72rem;
+      opacity: 0.85;
+    }
+
+    .projects__list {
       list-style: none;
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
     }
 
-    .projects li {
+    .projects__list li {
       border: 1px solid var(--border);
       border-radius: 8px;
       background: var(--surface);
@@ -129,38 +182,74 @@ const base = import.meta.env.BASE_URL
       transition: border-color 0.2s, opacity 0.2s, background 0.2s;
     }
 
-    .projects li.hidden {
+    .projects__list li.hidden {
       display: none;
     }
 
-    .projects li:hover {
+    .projects__list li:hover {
       border-color: var(--border-strong);
     }
 
-    .projects a {
+    .projects__list a {
       display: block;
       padding: 1.2rem;
       text-decoration: none;
       color: inherit;
     }
 
-    .projects h3 {
+    .projects__list h3 {
       font-size: 1.05rem;
       font-weight: 600;
       margin-bottom: 0.3rem;
     }
 
-    .projects time {
+    .projects__list time {
       font-size: 0.8rem;
       color: var(--subtle);
       display: block;
       margin-bottom: 0.4rem;
     }
 
-    .projects p {
+    .projects__list p {
       font-size: 0.9rem;
       color: var(--muted);
       margin-bottom: 0.8rem;
+    }
+
+    @media (max-width: 720px) {
+      .projects__layout {
+        grid-template-columns: 1fr;
+      }
+
+      .filters {
+        position: static;
+      }
+
+      .filters__inner {
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .tag-filter {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 1rem;
+      }
+
+      .filter-btn {
+        width: auto;
+        padding: 0.3rem 0.6rem;
+        transform: none;
+      }
+
+      .filter-btn:hover {
+        transform: none;
+      }
     }
 
     @media (max-width: 480px) {
@@ -180,9 +269,8 @@ const base = import.meta.env.BASE_URL
         margin-bottom: 2rem;
       }
 
-      .tag-filter {
-        gap: 0.3rem;
-        margin-bottom: 1rem;
+      .filters__title {
+        margin-bottom: 0.6rem;
       }
 
       .filter-btn {
@@ -190,11 +278,11 @@ const base = import.meta.env.BASE_URL
         padding: 0.2rem 0.5rem;
       }
 
-      .projects a {
+      .projects__list a {
         padding: 1rem;
       }
 
-      .projects h3 {
+      .projects__list h3 {
         font-size: 0.95rem;
       }
     }
@@ -202,7 +290,7 @@ const base = import.meta.env.BASE_URL
 
   <script>
     const buttons = document.querySelectorAll<HTMLButtonElement>(".filter-btn")
-    const items = document.querySelectorAll<HTMLLIElement>(".projects li")
+    const items = document.querySelectorAll<HTMLLIElement>(".projects__list li")
 
     buttons.forEach((btn) => {
       btn.addEventListener("click", () => {
