@@ -8,6 +8,7 @@ const projectDir = path.join(repoRoot, "src", "content", "projects")
 const tagFile = path.join(repoRoot, "src", "lib", "projectTags.ts")
 const host = "127.0.0.1"
 const port = Number(process.env.ADMIN_PORT ?? 8787)
+const pidFile = path.join(repoRoot, ".admin-server.pid")
 const statuses = new Set(["published", "draft", "archived"])
 
 function json(res, body, status = 200) {
@@ -410,6 +411,7 @@ const adminHtml = String.raw`<!doctype html>
           <button class="button primary" id="newButton" type="button">新規下書き</button>
           <button class="button" id="exportButton" type="button">記事を書き出す</button>
           <button class="button" id="buildButton" type="button">表示確認</button>
+          <button class="button" id="stopButton" type="button">管理画面を止める</button>
         </div>
         <div class="filter-row">
           <input class="input" id="searchInput" type="search" placeholder="記事を検索">
@@ -502,6 +504,7 @@ const adminHtml = String.raw`<!doctype html>
         newButton: document.querySelector("#newButton"),
         exportButton: document.querySelector("#exportButton"),
         buildButton: document.querySelector("#buildButton"),
+        stopButton: document.querySelector("#stopButton"),
         statusMessage: document.querySelector("#statusMessage"),
         tagChecks: document.querySelector("#tagChecks"),
         titleInput: document.querySelector("#titleInput"),
@@ -688,6 +691,18 @@ const adminHtml = String.raw`<!doctype html>
         }
       })
 
+      nodes.stopButton.addEventListener("click", async () => {
+        if (!confirm("管理画面を停止します。よろしいですか？")) return
+
+        try {
+          setMessage("管理画面を停止しています...")
+          await requestJson("/api/shutdown", { method: "POST", body: "{}" })
+          setMessage("管理画面を停止しました。このタブは閉じてください。")
+        } catch (error) {
+          setMessage(error.message)
+        }
+      })
+
       load().catch((error) => setMessage(error.message))
     </script>
   </body>
@@ -722,6 +737,14 @@ async function handleApi(req, res, url) {
     return
   }
 
+  if (req.method === "POST" && url.pathname === "/api/shutdown") {
+    json(res, { ok: true, message: "管理画面を停止します。" })
+    setTimeout(() => {
+      server.close(() => process.exit(0))
+    }, 100)
+    return
+  }
+
   json(res, { error: "Not found." }, 404)
 }
 
@@ -745,7 +768,21 @@ const server = http.createServer(async (req, res) => {
   }
 })
 
+function cleanupPidFile() {
+  try {
+    if (fs.existsSync(pidFile) && fs.readFileSync(pidFile, "utf8").trim() === String(process.pid)) {
+      fs.unlinkSync(pidFile)
+    }
+  } catch {
+    // ignore cleanup failures
+  }
+}
+
+process.on("exit", cleanupPidFile)
+process.on("SIGINT", () => process.exit(0))
+process.on("SIGTERM", () => process.exit(0))
+
 server.listen(port, host, () => {
+  fs.writeFileSync(pidFile, String(process.pid), "utf8")
   console.log(`DX Lab 管理画面: http://${host}:${port}/`)
 })
-
