@@ -6,6 +6,7 @@ import TagList from "../components/TagList.astro"
 import { withResolvedProjectDates } from "../lib/projectDates"
 
 const ALL_TAG = "all"
+const VISIBLE_TAG_LIMIT = 8
 
 function getPublishedProjects(projects: Awaited<ReturnType<typeof getCollection<"projects">>>) {
   return projects.filter((project) => project.data.status !== "draft")
@@ -40,6 +41,8 @@ const projects = getPublishedProjects(allProjects).map(withResolvedProjectDates)
 const featuredProjects = sortFeaturedProjects(projects.filter((project) => project.data.featured))
 const sortedProjects = sortProjectsByDate(projects.filter((project) => !project.data.featured))
 const tagSummary = buildTagSummary(projects)
+const visibleTags = tagSummary.slice(0, VISIBLE_TAG_LIMIT)
+const hiddenTags = tagSummary.slice(VISIBLE_TAG_LIMIT)
 
 const base = import.meta.env.BASE_URL
 ---
@@ -48,6 +51,9 @@ const base = import.meta.env.BASE_URL
   <header class="hero">
     <h1>DX Lab</h1>
     <p class="tagline">DX推進 × AI活用で、業務をもっとシンプルに</p>
+    <p class="hero__description">
+      大学事務で実際に試したAI・Google Workspace活用事例を、手順・効果・注意点つきでまとめています。
+    </p>
   </header>
 
   <section class="about">
@@ -61,8 +67,8 @@ const base = import.meta.env.BASE_URL
     <h2>記事</h2>
 
     {featuredProjects.length > 0 && (
-      <div class="featured-projects" aria-label="注目記事">
-        <p class="featured-projects__title">Featured</p>
+      <div class="featured-projects" aria-label="おすすめ記事">
+        <p class="featured-projects__title">おすすめ記事</p>
         <ul class="projects__list projects__list--featured">
           {featuredProjects.map((project) => (
             <li
@@ -76,10 +82,9 @@ const base = import.meta.env.BASE_URL
                   {project.data.highlightUpdated && <span class="project-badge">Updated</span>}
                 </div>
                 <div class="project-meta" aria-label="記事情報">
-                  <span>作成日: {project.data.createdAt}</span>
-                  <span>最終更新日: {project.data.updatedAt}</span>
+                  <span>更新: {project.data.updatedAt}</span>
                 </div>
-                <p>{project.data.description}</p>
+                <p class="project-summary"><span>この記事でわかること</span>{project.data.description}</p>
                 <TagList tags={project.data.tags} />
               </a>
               <div class="card-actions">
@@ -111,48 +116,66 @@ const base = import.meta.env.BASE_URL
               <span>すべて</span>
               <span class="filter-btn__count">{projects.length}</span>
             </button>
-            {tagSummary.map(([tag, count]) => (
+            {visibleTags.map(([tag, count]) => (
               <button class="filter-btn" type="button" data-tag={tag}>
                 <span>{tag}</span>
                 <span class="filter-btn__count">{count}</span>
               </button>
             ))}
+            {hiddenTags.length > 0 && (
+              <details class="tag-filter__more">
+                <summary>すべて表示</summary>
+                <div class="tag-filter tag-filter--nested">
+                  {hiddenTags.map(([tag, count]) => (
+                    <button class="filter-btn" type="button" data-tag={tag}>
+                      <span>{tag}</span>
+                      <span class="filter-btn__count">{count}</span>
+                    </button>
+                  ))}
+                </div>
+              </details>
+            )}
           </div>
           <p class="filters__title filters__title--sort">並び替え</p>
-          <div class="sort-controls">
-            <button class="sort-btn active" type="button" data-sort="date-desc">作成日が新しい順</button>
-            <button class="sort-btn" type="button" data-sort="date-asc">作成日が古い順</button>
-            <button class="sort-btn" type="button" data-sort="likes-desc">いいねが多い順</button>
-            <button class="sort-btn" type="button" data-sort="likes-asc">いいねが少ない順</button>
-          </div>
+          <label class="sort-control">
+            <span class="sr-only">記事の並び替え</span>
+            <select class="sort-select">
+              <option value="date-desc">作成日が新しい順</option>
+              <option value="date-asc">作成日が古い順</option>
+              <option value="likes-desc">いいねが多い順</option>
+              <option value="likes-asc">いいねが少ない順</option>
+            </select>
+          </label>
         </div>
       </aside>
 
-      <ul class="projects__list">
-        {sortedProjects.map((project) => (
-          <li
-            data-created-at={project.data.createdAt}
-            data-tags={JSON.stringify(project.data.tags)}
-            data-search-text={`${project.data.title} ${project.data.description} ${project.data.tags.join(" ")}`}
-          >
-            <a href={`${base}/projects/${project.id}/`}>
-              <div class="project-heading">
-                <h3>{project.data.title}</h3>
-                {project.data.highlightUpdated && <span class="project-badge">Updated</span>}
+      <div class="projects__results">
+        <ul class="projects__list">
+          {sortedProjects.map((project) => (
+            <li
+              data-created-at={project.data.createdAt}
+              data-tags={JSON.stringify(project.data.tags)}
+              data-search-text={`${project.data.title} ${project.data.description} ${project.data.tags.join(" ")}`}
+            >
+              <a href={`${base}/projects/${project.id}/`}>
+                <div class="project-heading">
+                  <h3>{project.data.title}</h3>
+                  {project.data.highlightUpdated && <span class="project-badge">Updated</span>}
+                </div>
+                <div class="project-meta" aria-label="記事情報">
+                  <span>更新: {project.data.updatedAt}</span>
+                </div>
+                <p class="project-summary"><span>この記事でわかること</span>{project.data.description}</p>
+                <TagList tags={project.data.tags} />
+              </a>
+              <div class="card-actions">
+                <LikeButton articleSlug={project.id} articleTitle={project.data.title} compact />
               </div>
-              <div class="project-meta" aria-label="記事情報">
-                <span>作成日: {project.data.createdAt}</span>
-                <span>最終更新日: {project.data.updatedAt}</span>
-              </div>
-              <p>{project.data.description}</p>
-              <TagList tags={project.data.tags} />
-            </a>
-            <div class="card-actions">
-              <LikeButton articleSlug={project.id} articleTitle={project.data.title} compact />
-            </div>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+        <p class="empty-results" hidden>該当する記事はありません。検索語やタグを変更してください。</p>
+      </div>
     </div>
   </section>
 
@@ -180,6 +203,13 @@ const base = import.meta.env.BASE_URL
       font-size: 1rem;
     }
 
+    .hero__description {
+      max-width: 42rem;
+      margin-top: 0.75rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
     h2 {
       font-size: 1.2rem;
       font-weight: 600;
@@ -190,6 +220,18 @@ const base = import.meta.env.BASE_URL
 
     section {
       margin-bottom: 2.5rem;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .about p,
@@ -304,14 +346,54 @@ const base = import.meta.env.BASE_URL
       margin-top: 1.15rem;
     }
 
-    .sort-controls {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
+    .tag-filter__more {
+      display: block;
     }
 
-    .filter-btn,
-    .sort-btn {
+    .tag-filter__more summary {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 0.45rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--subtle);
+      font-size: 0.78rem;
+      cursor: pointer;
+      list-style-position: inside;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    .tag-filter__more summary:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .tag-filter--nested {
+      margin-top: 0.5rem;
+    }
+
+    .sort-control {
+      display: block;
+      width: 100%;
+    }
+
+    .sort-select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.55rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-muted);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    .filter-btn {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -329,20 +411,21 @@ const base = import.meta.env.BASE_URL
       transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
     }
 
-    .sort-btn {
-      justify-content: flex-start;
-    }
-
     .filter-btn:hover,
-    .sort-btn:hover {
+    .sort-select:hover,
+    .sort-select:focus-visible {
       background: var(--surface-hover);
       color: var(--text);
       border-color: var(--border-strong);
       transform: none;
     }
 
-    .filter-btn.active,
-    .sort-btn.active {
+    .sort-select:focus-visible {
+      outline: 2px solid var(--text);
+      outline-offset: 2px;
+    }
+
+    .filter-btn.active {
       background: var(--accent);
       color: var(--accent-contrast);
       border-color: var(--accent);
@@ -363,6 +446,10 @@ const base = import.meta.env.BASE_URL
       display: flex;
       flex-direction: column;
       gap: var(--card-gap);
+      min-width: 0;
+    }
+
+    .projects__results {
       min-width: 0;
     }
 
@@ -434,9 +521,28 @@ const base = import.meta.env.BASE_URL
       margin-bottom: 0.4rem;
     }
 
-    .projects__list p {
+    .projects__list .project-summary {
       font-size: 0.9rem;
       margin-bottom: 0.8rem;
+    }
+
+    .project-summary span {
+      display: block;
+      margin-bottom: 0.15rem;
+      color: var(--subtle);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .empty-results {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
     }
 
     @media (max-width: 920px) {
@@ -472,27 +578,28 @@ const base = import.meta.env.BASE_URL
         margin-bottom: 1rem;
       }
 
-      .tag-filter,
-      .sort-controls {
+      .tag-filter {
         flex-direction: row;
         flex-wrap: wrap;
         gap: 0.4rem;
         padding-right: 0;
       }
 
+      .tag-filter__more {
+        width: 100%;
+      }
+
       .filters__title--sort {
         margin-top: 0;
       }
 
-      .filter-btn,
-      .sort-btn {
+      .filter-btn {
         width: auto;
         padding: 0.3rem 0.6rem;
         transform: none;
       }
 
-      .filter-btn:hover,
-      .sort-btn:hover {
+      .filter-btn:hover {
         transform: none;
       }
 
@@ -524,10 +631,14 @@ const base = import.meta.env.BASE_URL
         margin-bottom: 0.6rem;
       }
 
-      .filter-btn,
-      .sort-btn {
+      .filter-btn {
         font-size: 0.7rem;
         padding: 0.2rem 0.5rem;
+      }
+
+      .sort-select {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.5rem;
       }
 
       .projects__list h3 {
@@ -539,8 +650,9 @@ const base = import.meta.env.BASE_URL
   <script>
     (() => {
       const filterButtons = Array.from(document.querySelectorAll<HTMLButtonElement>(".filter-btn"))
-      const sortButtons = Array.from(document.querySelectorAll<HTMLButtonElement>(".sort-btn"))
+      const sortSelect = document.querySelector<HTMLSelectElement>(".sort-select")
       const projectItems = Array.from(document.querySelectorAll<HTMLLIElement>(".projects__list li[data-tags]"))
+      const emptyResults = document.querySelector<HTMLElement>(".empty-results")
       const siteSearchInput = document.querySelector<HTMLInputElement>(".site-search__input")
       const allTag = "all"
 
@@ -564,9 +676,7 @@ const base = import.meta.env.BASE_URL
 
       const setActiveSort = (sort: string) => {
         selectedSort = sort
-        sortButtons.forEach((button) => {
-          button.classList.toggle("active", button.dataset.sort === sort)
-        })
+        if (sortSelect) sortSelect.value = sort
       }
 
       const getLikeCount = (item: HTMLLIElement) => {
@@ -616,6 +726,9 @@ const base = import.meta.env.BASE_URL
           const matchesSearch = searchQuery.length === 0 || haystack.includes(normalize(searchQuery))
           item.classList.toggle("hidden", !(matchesTag && matchesSearch))
         })
+        if (emptyResults) {
+          emptyResults.hidden = projectItems.some((item) => !item.classList.contains("hidden"))
+        }
         applySort()
       }
 
@@ -641,11 +754,9 @@ const base = import.meta.env.BASE_URL
         })
       })
 
-      sortButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          setActiveSort(button.dataset.sort ?? "date-desc")
-          applySort()
-        })
+      sortSelect?.addEventListener("change", () => {
+        setActiveSort(sortSelect.value)
+        applySort()
       })
 
       const handleSiteSearch = () => applySiteSearch(siteSearchInput?.value ?? "")
