@@ -15,11 +15,35 @@ DX Lab は、AI・Google Workspace などを使った業務改善事例を Markd
 
 ```bash
 npm run dev
+npm run admin
 npm run build
 npm run new:project
 npm run export:content
 npm run export:likes
 ```
+
+## 管理画面を使う
+
+自分のPCだけで動く管理画面を開くには、次を実行します。
+
+```bash
+npm run admin
+```
+
+ブラウザで `http://127.0.0.1:8787/` を開くと管理画面を使えます。
+
+管理画面でできること:
+
+- 記事一覧の確認
+- 記事の軽い修正
+- `公開` / `下書き` / `退避` の切り替え
+- タグ選択
+- 記事の一括書き出し
+- 表示確認ビルド
+
+管理画面は公開サイトには含めていません。自分のPC上でMarkdownファイルを編集するだけなので、GitHubトークンやログイン情報をブラウザに保存しません。
+
+通常の記事追加・大きな修正はCodexに依頼し、管理画面は内容確認や状態変更に使う運用が安全です。
 
 ## 記事を追加する
 
