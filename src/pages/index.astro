@@ -73,6 +73,7 @@ const base = import.meta.env.BASE_URL
           {featuredProjects.map((project) => (
             <li
               data-created-at={project.data.createdAt}
+              data-updated-at={project.data.updatedAt}
               data-tags={JSON.stringify(project.data.tags)}
               data-search-text={`${project.data.title} ${project.data.description} ${project.data.tags.join(" ")}`}
             >
@@ -142,6 +143,8 @@ const base = import.meta.env.BASE_URL
             <select class="sort-select">
               <option value="date-desc">作成日が新しい順</option>
               <option value="date-asc">作成日が古い順</option>
+              <option value="updated-desc">更新日が新しい順</option>
+              <option value="updated-asc">更新日が古い順</option>
               <option value="likes-desc">いいねが多い順</option>
               <option value="likes-asc">いいねが少ない順</option>
             </select>
@@ -154,6 +157,7 @@ const base = import.meta.env.BASE_URL
           {sortedProjects.map((project) => (
             <li
               data-created-at={project.data.createdAt}
+              data-updated-at={project.data.updatedAt}
               data-tags={JSON.stringify(project.data.tags)}
               data-search-text={`${project.data.title} ${project.data.description} ${project.data.tags.join(" ")}`}
             >
@@ -686,6 +690,8 @@ const base = import.meta.env.BASE_URL
 
       const getCreatedAt = (item: HTMLLIElement) => item.dataset.createdAt ?? ""
 
+      const getUpdatedAt = (item: HTMLLIElement) => item.dataset.updatedAt ?? getCreatedAt(item)
+
       const getInitialOrder = (item: HTMLLIElement) => Number.parseInt(item.dataset.initialOrder ?? "0", 10) || 0
 
       const compareItems = (left: HTMLLIElement, right: HTMLLIElement) => {
@@ -696,6 +702,14 @@ const base = import.meta.env.BASE_URL
 
         if (selectedSort === "date-asc") {
           return getCreatedAt(left).localeCompare(getCreatedAt(right)) || getInitialOrder(left) - getInitialOrder(right)
+        }
+
+        if (selectedSort === "updated-desc") {
+          return getUpdatedAt(right).localeCompare(getUpdatedAt(left)) || getCreatedAt(right).localeCompare(getCreatedAt(left)) || getInitialOrder(left) - getInitialOrder(right)
+        }
+
+        if (selectedSort === "updated-asc") {
+          return getUpdatedAt(left).localeCompare(getUpdatedAt(right)) || getCreatedAt(left).localeCompare(getCreatedAt(right)) || getInitialOrder(left) - getInitialOrder(right)
         }
 
         if (selectedSort === "likes-desc") {
