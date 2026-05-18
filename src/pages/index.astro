@@ -65,7 +65,11 @@ const base = import.meta.env.BASE_URL
         <p class="featured-projects__title">Featured</p>
         <ul class="projects__list projects__list--featured">
           {featuredProjects.map((project) => (
-            <li data-tags={JSON.stringify(project.data.tags)} data-search-text={`${project.data.title} ${project.data.description} ${project.data.tags.join(" ")}`}>
+            <li
+              data-created-at={project.data.createdAt}
+              data-tags={JSON.stringify(project.data.tags)}
+              data-search-text={`${project.data.title} ${project.data.description} ${project.data.tags.join(" ")}`}
+            >
               <a href={`${base}/projects/${project.id}/`}>
                 <div class="project-heading">
                   <h3>{project.data.title}</h3>
@@ -103,7 +107,10 @@ const base = import.meta.env.BASE_URL
           </label>
           <p class="filters__title">タグ</p>
           <div class="tag-filter">
-            <button class="filter-btn active" type="button" data-tag={ALL_TAG}>すべて</button>
+            <button class="filter-btn active" type="button" data-tag={ALL_TAG}>
+              <span>すべて</span>
+              <span class="filter-btn__count">{projects.length}</span>
+            </button>
             {tagSummary.map(([tag, count]) => (
               <button class="filter-btn" type="button" data-tag={tag}>
                 <span>{tag}</span>
@@ -111,12 +118,23 @@ const base = import.meta.env.BASE_URL
               </button>
             ))}
           </div>
+          <p class="filters__title filters__title--sort">並び替え</p>
+          <div class="sort-controls">
+            <button class="sort-btn active" type="button" data-sort="date-desc">作成日が新しい順</button>
+            <button class="sort-btn" type="button" data-sort="date-asc">作成日が古い順</button>
+            <button class="sort-btn" type="button" data-sort="likes-desc">いいねが多い順</button>
+            <button class="sort-btn" type="button" data-sort="likes-asc">いいねが少ない順</button>
+          </div>
         </div>
       </aside>
 
       <ul class="projects__list">
         {sortedProjects.map((project) => (
-          <li data-tags={JSON.stringify(project.data.tags)} data-search-text={`${project.data.title} ${project.data.description} ${project.data.tags.join(" ")}`}>
+          <li
+            data-created-at={project.data.createdAt}
+            data-tags={JSON.stringify(project.data.tags)}
+            data-search-text={`${project.data.title} ${project.data.description} ${project.data.tags.join(" ")}`}
+          >
             <a href={`${base}/projects/${project.id}/`}>
               <div class="project-heading">
                 <h3>{project.data.title}</h3>
@@ -282,7 +300,18 @@ const base = import.meta.env.BASE_URL
       gap: 0.5rem;
     }
 
-    .filter-btn {
+    .filters__title--sort {
+      margin-top: 1.15rem;
+    }
+
+    .sort-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .filter-btn,
+    .sort-btn {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -300,14 +329,20 @@ const base = import.meta.env.BASE_URL
       transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
     }
 
-    .filter-btn:hover {
+    .sort-btn {
+      justify-content: flex-start;
+    }
+
+    .filter-btn:hover,
+    .sort-btn:hover {
       background: var(--surface-hover);
       color: var(--text);
       border-color: var(--border-strong);
       transform: none;
     }
 
-    .filter-btn.active {
+    .filter-btn.active,
+    .sort-btn.active {
       background: var(--accent);
       color: var(--accent-contrast);
       border-color: var(--accent);
@@ -434,20 +469,30 @@ const base = import.meta.env.BASE_URL
       }
 
       .tag-filter {
+        margin-bottom: 1rem;
+      }
+
+      .tag-filter,
+      .sort-controls {
         flex-direction: row;
         flex-wrap: wrap;
         gap: 0.4rem;
-        margin-bottom: 1rem;
         padding-right: 0;
       }
 
-      .filter-btn {
+      .filters__title--sort {
+        margin-top: 0;
+      }
+
+      .filter-btn,
+      .sort-btn {
         width: auto;
         padding: 0.3rem 0.6rem;
         transform: none;
       }
 
-      .filter-btn:hover {
+      .filter-btn:hover,
+      .sort-btn:hover {
         transform: none;
       }
 
@@ -479,7 +524,8 @@ const base = import.meta.env.BASE_URL
         margin-bottom: 0.6rem;
       }
 
-      .filter-btn {
+      .filter-btn,
+      .sort-btn {
         font-size: 0.7rem;
         padding: 0.2rem 0.5rem;
       }
@@ -493,20 +539,72 @@ const base = import.meta.env.BASE_URL
   <script>
     (() => {
       const filterButtons = Array.from(document.querySelectorAll<HTMLButtonElement>(".filter-btn"))
+      const sortButtons = Array.from(document.querySelectorAll<HTMLButtonElement>(".sort-btn"))
       const projectItems = Array.from(document.querySelectorAll<HTMLLIElement>(".projects__list li[data-tags]"))
       const siteSearchInput = document.querySelector<HTMLInputElement>(".site-search__input")
       const allTag = "all"
 
       if (filterButtons.length === 0 || projectItems.length === 0) return
 
+      projectItems.forEach((item, index) => {
+        item.dataset.initialOrder = String(index)
+      })
+
       const normalize = (value: string) => value.normalize("NFKC").toLocaleLowerCase().trim()
       let selectedTag = allTag
       let searchQuery = ""
+      let selectedSort = "date-desc"
 
       const setActiveFilter = (tag: string) => {
         selectedTag = tag
         filterButtons.forEach((button) => {
           button.classList.toggle("active", button.dataset.tag === tag)
+        })
+      }
+
+      const setActiveSort = (sort: string) => {
+        selectedSort = sort
+        sortButtons.forEach((button) => {
+          button.classList.toggle("active", button.dataset.sort === sort)
+        })
+      }
+
+      const getLikeCount = (item: HTMLLIElement) => {
+        const count = item.querySelector<HTMLElement>("[data-like-count]")?.textContent ?? "0"
+        return Number.parseInt(count, 10) || 0
+      }
+
+      const getCreatedAt = (item: HTMLLIElement) => item.dataset.createdAt ?? ""
+
+      const getInitialOrder = (item: HTMLLIElement) => Number.parseInt(item.dataset.initialOrder ?? "0", 10) || 0
+
+      const compareItems = (left: HTMLLIElement, right: HTMLLIElement) => {
+        const leftVisible = !left.classList.contains("hidden")
+        const rightVisible = !right.classList.contains("hidden")
+
+        if (leftVisible !== rightVisible) return leftVisible ? -1 : 1
+
+        if (selectedSort === "date-asc") {
+          return getCreatedAt(left).localeCompare(getCreatedAt(right)) || getInitialOrder(left) - getInitialOrder(right)
+        }
+
+        if (selectedSort === "likes-desc") {
+          return getLikeCount(right) - getLikeCount(left) || getCreatedAt(right).localeCompare(getCreatedAt(left)) || getInitialOrder(left) - getInitialOrder(right)
+        }
+
+        if (selectedSort === "likes-asc") {
+          return getLikeCount(left) - getLikeCount(right) || getCreatedAt(right).localeCompare(getCreatedAt(left)) || getInitialOrder(left) - getInitialOrder(right)
+        }
+
+        return getCreatedAt(right).localeCompare(getCreatedAt(left)) || getInitialOrder(left) - getInitialOrder(right)
+      }
+
+      const applySort = () => {
+        const parents = [...new Set(projectItems.map((item) => item.parentElement).filter(Boolean))]
+
+        parents.forEach((parent) => {
+          const items = projectItems.filter((item) => item.parentElement === parent).sort(compareItems)
+          items.forEach((item) => parent?.appendChild(item))
         })
       }
 
@@ -518,6 +616,7 @@ const base = import.meta.env.BASE_URL
           const matchesSearch = searchQuery.length === 0 || haystack.includes(normalize(searchQuery))
           item.classList.toggle("hidden", !(matchesTag && matchesSearch))
         })
+        applySort()
       }
 
       const applySiteSearch = (query: string) => {
@@ -542,11 +641,24 @@ const base = import.meta.env.BASE_URL
         })
       })
 
+      sortButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          setActiveSort(button.dataset.sort ?? "date-desc")
+          applySort()
+        })
+      })
+
       const handleSiteSearch = () => applySiteSearch(siteSearchInput?.value ?? "")
 
       siteSearchInput?.addEventListener("input", handleSiteSearch)
       siteSearchInput?.addEventListener("search", handleSiteSearch)
       siteSearchInput?.addEventListener("keyup", handleSiteSearch)
+
+      const likeCountObserver = new MutationObserver(() => applySort())
+      projectItems.forEach((item) => {
+        const countNode = item.querySelector("[data-like-count]")
+        if (countNode) likeCountObserver.observe(countNode, { childList: true, characterData: true, subtree: true })
+      })
 
       handleSiteSearch()
       applyVisibleState()
