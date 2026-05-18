@@ -1,0 +1,23 @@
+export const PROJECT_TAGS = [
+  "AI",
+  "Gemini",
+  "Gmail",
+  "Google Apps Script",
+  "Google Chat",
+  "Google Docs",
+  "Google Drive",
+  "Google Forms",
+  "Google Meet",
+  "Google Sheets",
+  "Google Workspace Studio",
+  "NotebookLM",
+  "マニュアル",
+  "引き継ぎ",
+  "議事録",
+  "業務改善",
+  "経理",
+  "自動化",
+  "多言語対応",
+  "法令",
+] as const
+

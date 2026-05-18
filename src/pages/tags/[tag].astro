@@ -5,7 +5,7 @@ import TagList from "../../components/TagList.astro"
 
 export async function getStaticPaths() {
   const allProjects = await getCollection("projects")
-  const projects = allProjects.filter((p) => p.data.status !== "draft")
+  const projects = allProjects.filter((p) => p.data.status === "published")
 
   const tagSet = new Set<string>()
   projects.forEach((p) => p.data.tags.forEach((t) => tagSet.add(t)))

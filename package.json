@@ -6,7 +6,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "new:project": "node scripts/new-project.mjs",
+    "export:content": "node scripts/export-content.mjs",
+    "export:likes": "node scripts/export-likes.mjs"
   },
   "dependencies": {
     "astro": "^5.17.1"

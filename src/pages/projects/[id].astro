@@ -8,7 +8,7 @@ import { resolveProjectUpdatedAt } from "../../lib/projectDates"
 export async function getStaticPaths() {
   const projects = await getCollection("projects")
   return projects
-    .filter((p) => p.data.status !== "draft")
+    .filter((p) => p.data.status === "published")
     .map((project) => ({
       params: { id: project.id },
       props: { project },

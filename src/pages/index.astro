@@ -9,7 +9,7 @@ const ALL_TAG = "all"
 const VISIBLE_TAG_LIMIT = 8
 
 function getPublishedProjects(projects: Awaited<ReturnType<typeof getCollection<"projects">>>) {
-  return projects.filter((project) => project.data.status !== "draft")
+  return projects.filter((project) => project.data.status === "published")
 }
 
 function sortProjectsByDate(projects: ReturnType<typeof getPublishedProjects>) {
