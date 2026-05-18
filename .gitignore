@@ -1,6 +1,7 @@
 # build output
 dist/
 exports/
+.admin-server.pid
 # generated types
 .astro/
 
